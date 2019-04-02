@@ -1,0 +1,214 @@
+<!--
+  Generated template for the PickingListPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+  <ion-navbar>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title *ngIf="current_selected_partner && selected_partner_name">Movimientos de stock: {{ selected_partner_name }}
+    </ion-title>
+    <ion-title *ngIf="!current_selected_partner || !selected_partner_name">Movimientos de stock</ion-title>
+
+    <ion-buttons end>
+
+      <button ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'pasaran'}" (click)="show_shipping_type('pasaran', true)" outline icon-only>
+        <ion-icon name="hand" is-active="true"></ion-icon>
+      </button>
+        
+      <button ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'agency'}" (click)="show_shipping_type('agency', true)" outline icon-only>
+        <ion-icon name="home" is-active="true"></ion-icon>
+      </button>
+
+      <button ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'route'}" (click)="show_shipping_type('route', true)" outline icon-only>
+        <ion-icon name="compass" is-active="true"></ion-icon>
+      </button>
+    </ion-buttons>
+
+  </ion-navbar> 
+</ion-header>
+
+<ion-content padding>
+  <ion-grid>
+    <ion-row>
+      <ion-col col-2 col-xs-12 col-sm-12 col-md-6 col-lg-2 col-xl-2>
+        <ion-row>
+          <ion-grid>
+            <ion-scroll id="users" scrollY=true>
+              <ion-row class="row header">
+                <ion-col col-12 class="col">
+                    Clientes
+                </ion-col>
+              </ion-row>
+              <ion-row class="row">
+                <ion-col col-12 class="col">
+                  <ion-searchbar (ionInput)="filter_users_list($event)"></ion-searchbar>
+                </ion-col>
+              </ion-row>
+              <ion-row class="row" *ngFor="let user of users_list">
+                <ion-col col-12 class="col fat-col" [ngClass]="{'red-background': user[0] == current_selected_partner}" (click)= "get_partner_move_lines(user[0])">
+                    {{ user[1] }}
+                </ion-col>
+              </ion-row>
+            </ion-scroll>
+          </ion-grid>
+        </ion-row>
+      </ion-col>
+      <ion-col col-6 col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xl-6>
+        <ion-grid>
+          <ion-scroll scrollY=true>
+            <ion-row class="row header filter" *ngIf="current_selected_partner && selected_partner_name">
+              <ion-col col-3>
+                <button color="default" [ngClass]="{'red-icon': current_list_shown == 'move_list'}" (click)="show_partner_move_lines()" outline icon-only>
+                  <ion-icon name='clipboard' is-active="true"></ion-icon>
+                </button>
+              </ion-col>
+              <ion-col col-3>
+                <button color="default" [ngClass]="{'red-icon': current_list_shown == 'package_list'}" (click)="show_partner_packages_arrivals()" outline icon-only>
+                  <ion-icon name='cube' is-active="true"></ion-icon>
+                </button>
+              </ion-col>
+              <ion-col col-3>
+                <button color="default" *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_unassigned'}" (click)="moves_filter_by_assigned_pkgs(0)" outline icon-only>
+                  <ion-icon name='log-in' is-active="true"></ion-icon>
+                </button>
+              </ion-col>
+              <ion-col col-3>
+                <button color="default" *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_assigned'}" (click)="moves_filter_by_assigned_pkgs(1)" outline icon-only>
+                  <ion-icon name='log-out' is-active="true"></ion-icon>
+                </button>
+              </ion-col>
+            </ion-row>
+            <div *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'">
+              <ion-row class="row header">
+                <ion-col col-1 class="col">ID</ion-col>
+                <ion-col col-2 class="col">Pedido</ion-col>
+                <ion-col col-1 class="col">UDs.</ion-col>
+                <ion-col col-3 class="col">P.Entrada</ion-col>
+                <ion-col col-3 class="col">P.Salida</ion-col>
+                <ion-col col-2 class="col">Opc.</ion-col>
+              </ion-row>
+              <div dragula="move_lines_container" id="lines" [dragulaModel]="users_list">
+                <div *ngFor="let move of full_stock_moves" id="{{move['id']}}" (press)="show_shipping_options_line(move['id'])">
+                    <ion-row class="row" *ngIf="((!move['shipping_type'] && move['partner_default_shipping_type'] == current_shipping_type) || (move['shipping_type'] && move['shipping_type'] == current_shipping_type)) && ((current_list_shown == 'filtered_unassigned' && !move['result_package_id']) || (current_list_shown == 'filtered_assigned' && move['result_package_id'].length > 0) || (current_list_shown == 'move_list'))">
+                      <ion-col col-1 class="col product-col">{{move['id']}}</ion-col>
+                      <ion-col col-2 class="col product-col">{{move['origin']}}</ion-col>
+                      <ion-col col-1 class="col product-col">{{move['product_qty']}}</ion-col>
+                      <ion-col col-3 class="col product-col">{{move['package_id'][1] || 'N'}}</ion-col>
+                      <ion-col col-3 class="col product-col">{{move['result_package_id'][1] || 'N'}}</ion-col>
+                      <ion-col col-2 class="col product-col options">
+                        <!-- <div *ngIf="!move['result_package_id']">
+                          <button *ngIf="!current_selected_pkg" color="default" (click)="create_new_package(move['id'])" outline icon-only>
+                            <ion-icon name='add-circle' is-active="true"></ion-icon>
+                          </button>
+                          <button *ngIf="current_selected_pkg" color="default" (click)="add_product_to_package(move['id'])" outline icon-only>
+                            <ion-icon name='add-circle' is-active="true"></ion-icon>
+                          </button>
+                        </div> -->
+                        <div *ngIf="move['result_package_id']">
+                          <button (click)= "open_package(move['result_package_id'][0])" [ngClass]="{'red-icon': move['result_package_id'][0] == current_selected_pkg}" color="default" outline icon-only>
+                            <ion-icon name='eye' is-active="true"></ion-icon>
+                          </button>
+                        </div>
+                      </ion-col>
+                      <ion-col col-12 class="col product-col"><strong>{{move['name']}}</strong></ion-col>
+                    </ion-row>
+                  </div>
+              </div>
+            </div>
+            <div *ngIf="current_list_shown == 'package_list'">
+              <ion-row class="row header">
+                <ion-col col-6 class="col">ID</ion-col>
+                <ion-col col-6 class="col">Nombre</ion-col>
+              </ion-row>
+              <div dragula="move_lines_container" id="arrival_pkgs" [dragulaModel]="current_partner_arrival_pkgs_list">
+                <ion-row class="row" *ngFor="let arrival_pkg of current_partner_arrival_pkgs_list" id="{{arrival_pkg[0]}}">
+                  <ion-col col-6 class="col product-col">{{arrival_pkg[0]}}</ion-col>
+                  <ion-col col-6 class="col product-col">{{arrival_pkg[1]}}</ion-col>
+                </ion-row>
+              </div>
+            </div>
+          </ion-scroll>
+        </ion-grid>
+      </ion-col>
+
+      <ion-col col-4 col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4>
+        <ion-row>
+          <ion-grid>
+            <ion-scroll scrollY=true>
+              <div *ngIf="current_selected_pkg == false">
+                <ion-row class="row header-reddish">
+                  <ion-col col-8 class="col pkg">
+                    Paquetes
+                  </ion-col>
+                  <ion-col col-4 class="col add">
+                    <ion-row>
+                      <ion-col class="col add" col-12>
+                        <button *ngIf="current_selected_partner && selected_partner_name" class="black" icon-only (click)="create_new_package_for_partner()">
+                          <ion-icon name="add-circle"></ion-icon>
+                        </button>
+                      </ion-col>
+                    </ion-row>
+                  </ion-col>
+                </ion-row>
+                <ion-row class="row" dragula="move_lines_container" id="pkgs" [dragulaModel]="current_partner_pkg_list">
+                  <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg[0]}}" [ngClass]="{'red-background': pkg[0] == current_selected_pkg, 'hidden-col': ((!pkg[2] && pkg[3] != current_shipping_type) || (pkg[2] && pkg[2] != current_shipping_type))}" (click)="open_package(pkg[0])" (press)="show_shipping_options(pkg[0])">
+                    <ion-row>{{pkg[1]}}</ion-row>
+                  </ion-col>
+                </ion-row>
+              </div>
+              <div *ngIf="current_selected_pkg != false">
+                <ion-row class="row header-reddish">
+                  <ion-col col-8 class="col pkg">
+                    Paquetes
+                  </ion-col>
+                  <ion-col col-4 class="col add">
+                    <ion-row>
+                      <ion-col class="col add" col-12>
+                        <button *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg" class="black" icon-only (click)="showDestroyConfirmation(current_selected_pkg)">
+                          <ion-icon name="remove-circle"></ion-icon>
+                        </button>
+                      </ion-col>
+                    </ion-row>
+                  </ion-col>
+                </ion-row>
+                <ion-row class="row header">
+                  <ion-col col-6 class="col pkg">
+                    Contenido del paquete
+                  </ion-col>
+                  <ion-col col-6 class="col add">
+                    <span *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg">Envío: {{ selected_pkg_current_shipping_type }}</span>
+                  </ion-col>
+                </ion-row>
+                <ion-row class="row header">
+                  <ion-col col-6 class="col">Nombre</ion-col>
+                  <ion-col col-6 class="col">Cant.</ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col col-12 class="col">
+                    <ion-row class="row" (click)="reload_with_data(current_selected_partner, false, current_shipping_type)">
+                      <ion-icon name="undo"></ion-icon>
+                    </ion-row>
+                  </ion-col>
+                </ion-row>
+                <div dragula="move_lines_container" id="pkgs_info" [dragulaModel]="current_pkg_info">
+                  <ion-row class="row" id="{{pkg_line[0]}}" *ngFor="let pkg_line of current_pkg_info">
+                    <ion-col col-6 class="col product-col">
+                      <ion-row>{{pkg_line[1]}}</ion-row>
+                    </ion-col>
+                    <ion-col col-6 class="col product-col">
+                      <ion-row>{{pkg_line[2]}}</ion-row>
+                    </ion-col>
+                  </ion-row>
+                </div>
+              </div>
+            </ion-scroll>
+          </ion-grid>
+        </ion-row>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>
