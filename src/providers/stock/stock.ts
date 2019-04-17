@@ -370,6 +370,28 @@ export class StockProvider {
     return promise
   }
 
+  get_stock_move_lines_list_apk(partner_id, location_dest_id) {
+    let self = this
+    let model 
+    let values = {
+      'location_dest_id': location_dest_id,
+      'partner_id': partner_id
+    }
+     
+    model = 'stock.move.line'
+    let promise = new Promise( (resolve, reject) => {
+      self.odooCon.execute(model, 'get_stock_move_lines_list_apk', values).then((done) => {
+       resolve(done)
+      })
+      .catch((err) => {
+        reject(false)
+        console.log("Error al validar")
+    });
+    })
+    
+    return promise
+  }
+
   get_stock_move_lines_list(domain, type='tree') {
     let self = this
     let model = 'stock.move.line'
@@ -444,7 +466,7 @@ export class StockProvider {
   }
 
 
-  get_users_list_v2(location_dest_id) {
+  get_users_list_for_apk(location_dest_id) {
     let self = this
     let model 
     let values = {
@@ -453,7 +475,7 @@ export class StockProvider {
      
     model = 'stock.move'
     let promise = new Promise( (resolve, reject) => {
-      self.odooCon.execute(model, 'get_users_and_moves_apk', values).then((done) => {
+      self.odooCon.execute(model, 'get_users_list_for_apk', values).then((done) => {
        resolve(done)
       })
       .catch((err) => {

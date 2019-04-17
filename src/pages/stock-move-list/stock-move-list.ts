@@ -169,7 +169,8 @@ export class StockMoveListPage {
   get_selected_warehouse(){
     this.storage.get('wh_output_stock_loc_id').then((val) => {
       this.default_warehouse = val
-      this.get_users_list()
+      this.get_users_list_apk()
+      /* this.get_users_list() */
     })
   }
 
@@ -180,44 +181,17 @@ export class StockMoveListPage {
     })
   }
 
-  get_users_list() {
-    
-    let lines_array = []
-    let domain = [['state', 'in', ['done']], ['location_dest_id', '=', this.default_warehouse]]
-    this.stockInfo.get_users_list(domain, 'moves').then((lines:Array<{}>) => {
-      lines.forEach(line => {
-        line['move_dest_ids'].forEach(id => {
-          if(id && id != ''){
-            lines_array.push(id)
-          }
-        })
-      })
-      this.full_line_ids = lines_array
-      this.get_users_list_in_ids(this.full_line_ids)
-    })
-
-  }
-
-  get_users_list_in_ids(move_ids) {
-    this.users_list = []
-    this.full_users_list = []
-    let domain = [['move_id.id', 'in', move_ids]]
-    this.stockInfo.get_stock_move_lines_list(domain, 'partner').then((lines:Array<{}>) => {
-      lines.forEach(line => {
-        if (!this.filtered_users_ids.includes(line['partner_id'][0]) && line['partner_id'] != false){
-          this.filtered_users_ids.push(line['partner_id'][0])
-          line['partner_id'][2] = line['partner_default_shipping_type']
-          this.users_list.push(line['partner_id'])
-        }
-      })
-      this.full_users_list = this.users_list
+  get_users_list_apk() {
+    this.stockInfo.get_users_list_for_apk(this.default_warehouse).then((lines:Array<{}>) => {
+      this.users_list = lines
       if(this.passed_selected_partner) {
-        this.get_partner_move_lines(this.passed_selected_partner, this.passed_selected_pkg)
+        this.get_partner_move_lines_apk(this.passed_selected_partner, this.passed_selected_pkg)
         if (this.passed_shipping_type) {
           this.current_shipping_type = this.passed_shipping_type
         }
       }
       this.changeDetectorRef.detectChanges()
+      this.full_users_list = lines
       return this.users_list
     })
   }
@@ -245,14 +219,17 @@ export class StockMoveListPage {
     this.changeDetectorRef.detectChanges()
   }
 
-  get_partner_move_lines(partner_id, current_selected_pkg=false, move_ids=this.full_line_ids) {
+  get_partner_move_lines_apk(partner_id, current_selected_pkg=false) {
     this.current_selected_partner = partner_id
     this.current_selected_pkg = current_selected_pkg
     this.get_user_name(this.current_selected_partner)
     this.show_shipping_type(this.selected_partner_default_shipping_type)
 
-    let domain = [['move_id.partner_id', '=', partner_id], ['move_id.id', 'in', move_ids], ['state', 'in', ['assigned']]]
-    this.stockInfo.get_stock_move_lines_list(domain, 'tree').then((lines:Array<{}>) => {
+    this.stockInfo.get_stock_move_lines_list_apk(partner_id, this.default_warehouse).then((lines:Array<{}>) => {
+      this.full_stock_moves = []
+      this.filtered_arrival_pkg_list = []
+      this.current_partner_pkg_list = []
+      this.current_partner_arrival_pkgs_list = []
       this.selected_pkg_default_shipping = false
       this.selected_pkg_selected_shipping = false
       this.selected_pkg_delivery_carrier_id = false
@@ -260,24 +237,10 @@ export class StockMoveListPage {
       this.selected_pkg_current_shipping_type = false
       this.filtered_pkg_list = []
       this.current_pkg_info = []
-      this.current_partner_pkg_list = []
-      this.full_stock_moves = []
-      this.current_partner_arrival_pkgs_list = []
-      this.filtered_arrival_pkg_list = []
-      for (let line in lines){
-        if(lines[line]['result_package_id'] && !this.filtered_pkg_list.includes(lines[line]['result_package_id'][0])) {
-          this.filtered_pkg_list.push(lines[line]['result_package_id'][0])
-          lines[line]['result_package_id'][2] = lines[line]['result_package_shipping_type']
-          lines[line]['result_package_id'][3] = lines[line]['partner_default_shipping_type']
-          this.current_partner_pkg_list.push(lines[line]['result_package_id'])
-        }
-        if(lines[line]['package_id'] && !this.filtered_arrival_pkg_list.includes(lines[line]['package_id'][0])) {
-          this.filtered_arrival_pkg_list.push(lines[line]['package_id'][0])
-          this.current_partner_arrival_pkgs_list.push(lines[line]['package_id'])
-        }
-        lines[line]['index']=line
-        this.full_stock_moves.push(lines[line])
-      }
+      
+      this.current_partner_pkg_list = lines['result_package_ids']
+      this.full_stock_moves = lines['move_lines']
+      this.current_partner_arrival_pkgs_list = lines['arrival_package_ids']
       this.get_partner_empty_packages(partner_id)
     }).catch((mierror) => {
       this.full_stock_moves = []
@@ -288,6 +251,7 @@ export class StockMoveListPage {
       this.open_package(this.current_selected_pkg)
     }
     this.changeDetectorRef.detectChanges()
+
   }
 
   show_partner_move_lines() {

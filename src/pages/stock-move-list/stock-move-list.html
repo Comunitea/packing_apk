@@ -49,7 +49,7 @@
                 </ion-col>
               </ion-row>
               <ion-row class="row" *ngFor="let user of users_list">
-                <ion-col col-12 class="col fat-col" [ngClass]="{'red-background': user[0] == current_selected_partner}" (click)= "get_partner_move_lines(user[0])">
+                <ion-col col-12 class="col fat-col" [ngClass]="{'red-background': user[0] == current_selected_partner}" (click)= "get_partner_move_lines_apk(user[0])">
                     {{ user[1] }}
                 </ion-col>
               </ion-row>
@@ -93,7 +93,7 @@
               </ion-row>
               <div dragula="move_lines_container" id="lines" [dragulaModel]="users_list">
                 <div *ngFor="let move of full_stock_moves" id="{{move['id']}}" (press)="show_shipping_options_line(move['id'])">
-                    <ion-row class="row" *ngIf="((!move['shipping_type'] && move['partner_default_shipping_type'] == current_shipping_type) || (move['shipping_type'] && move['shipping_type'] == current_shipping_type)) && ((current_list_shown == 'filtered_unassigned' && !move['result_package_id']) || (current_list_shown == 'filtered_assigned' && move['result_package_id'].length > 0) || (current_list_shown == 'move_list'))">
+                    <ion-row class="row" *ngIf="((!move['shipping_type'] && move['partner_default_shipping_type'] == current_shipping_type) || (move['shipping_type'] && move['shipping_type'] == current_shipping_type)) && ((current_list_shown == 'filtered_unassigned' && !move['result_package_id']) || (current_list_shown == 'filtered_assigned' && move['result_package_id']) || (current_list_shown == 'move_list'))">
                       <ion-col col-1 class="col product-col">{{move['id']}}</ion-col>
                       <ion-col col-2 class="col product-col">{{move['origin']}}</ion-col>
                       <ion-col col-1 class="col product-col">{{move['product_qty']}}</ion-col>
