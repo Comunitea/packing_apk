@@ -236,7 +236,6 @@ export class StockMoveListPage {
       this.selected_pkg_selected_route_id = false
       this.selected_pkg_current_shipping_type = false
       this.filtered_pkg_list = []
-      this.current_pkg_info = []
       
       this.current_partner_pkg_list = lines['result_package_ids']
       this.full_stock_moves = lines['move_lines']
@@ -250,8 +249,6 @@ export class StockMoveListPage {
     if(this.current_selected_pkg != false){
       this.open_package(this.current_selected_pkg)
     }
-    this.changeDetectorRef.detectChanges()
-
   }
 
   show_partner_move_lines() {
@@ -333,7 +330,6 @@ export class StockMoveListPage {
     this.changeDetectorRef.detectChanges()
     this.stockInfo.get_package_lines(package_id).then((lineas:Array<{}>)=> {
       this.current_pkg_info = lineas
-      this.changeDetectorRef.detectChanges()
     }).catch((mierror) => {
       this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
     })
@@ -346,10 +342,10 @@ export class StockMoveListPage {
       } else if (current_shipping_selection == 'route') {
         this.selected_pkg_current_shipping_type = lineas[0]['selected_route'][1]
       }
-      this.changeDetectorRef.detectChanges()
     }).catch((mierror) => {
       this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
     })
+    this.changeDetectorRef.detectChanges()
   }
 
   // Shipping type
