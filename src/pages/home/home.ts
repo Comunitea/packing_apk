@@ -133,7 +133,6 @@ export class HomePage {
         this.odoo.login(con.username, con.password).then ((uid) => {
             this.odoo.uid = uid
             this.odoo.search_read(model, domain, fields).then((value) => {
-                var user = {id: null, name: null, image: null, login: null, cliente_id: null, company_id: null};
                 if (value) {
                     this.storage.set('USER', value).then(() => {
                     this.cargar=false

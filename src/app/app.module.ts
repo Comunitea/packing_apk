@@ -13,6 +13,8 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StockProvider } from '../providers/stock/stock';
 import { OdooProvider } from '../providers/odoo/odoo';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { TooltipsModule } from 'ionic-tooltips';
 
 @NgModule({
   declarations: [
@@ -25,7 +27,9 @@ import { OdooProvider } from '../providers/odoo/odoo';
     BrowserModule,
     IonicModule.forRoot(MyApp),
     IonicStorageModule.forRoot(),
-    DragulaModule.forRoot()
+    DragulaModule.forRoot(),
+    BrowserAnimationsModule,
+    TooltipsModule.forRoot()
     /* Para Android ~9 hay que poner poner websql para que funcione.
     
     IonicStorageModule.forRoot(

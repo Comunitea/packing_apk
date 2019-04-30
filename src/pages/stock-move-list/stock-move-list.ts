@@ -5,6 +5,7 @@ import { Storage } from '@ionic/storage';
 import { FormGroup } from '@angular/forms'; 
 import { Subscription } from 'rxjs';
 import { DragulaService } from 'ng2-dragula';
+import { TooltipsModule } from 'ionic-tooltips';
 
 /**
  * Generated class for the StockMoveListPage page.

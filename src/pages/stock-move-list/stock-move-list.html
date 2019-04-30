@@ -15,15 +15,15 @@
 
     <ion-buttons end>
 
-      <button ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'pasaran'}" (click)="show_shipping_type('pasaran', true)" outline icon-only>
+      <button tooltip="Pasarán" positionV="bottom" ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'pasaran'}" (click)="show_shipping_type('pasaran', true)" outline icon-only>
         <ion-icon name="hand" is-active="true"></ion-icon>
       </button>
         
-      <button ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'agency'}" (click)="show_shipping_type('agency', true)" outline icon-only>
+      <button tooltip="Agencia" positionV="bottom" ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'agency'}" (click)="show_shipping_type('agency', true)" outline icon-only>
         <ion-icon name="home" is-active="true"></ion-icon>
       </button>
 
-      <button ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'route'}" (click)="show_shipping_type('route', true)" outline icon-only>
+      <button tooltip="Ruta" positionV="bottom" ion-button icon-only item-end [ngClass]="{'red-icon': current_shipping_type == 'route'}" (click)="show_shipping_type('route', true)" outline icon-only>
         <ion-icon name="compass" is-active="true"></ion-icon>
       </button>
     </ion-buttons>
@@ -62,22 +62,22 @@
           <ion-scroll scrollY=true>
             <ion-row class="row header filter" *ngIf="current_selected_partner && selected_partner_name">
               <ion-col col-3>
-                <button color="default" [ngClass]="{'red-icon': current_list_shown == 'move_list'}" (click)="show_partner_move_lines()" outline icon-only>
+                <button color="default" tooltip="Movimientos" positionV="top" arrow [ngClass]="{'red-icon': current_list_shown == 'move_list'}" (click)="show_partner_move_lines()" outline icon-only>
                   <ion-icon name='clipboard' is-active="true"></ion-icon>
                 </button>
               </ion-col>
               <ion-col col-3>
-                <button color="default" [ngClass]="{'red-icon': current_list_shown == 'package_list'}" (click)="show_partner_packages_arrivals()" outline icon-only>
+                <button color="default" tooltip="Paquetes Entrantes" positionV="top" arrow [ngClass]="{'red-icon': current_list_shown == 'package_list'}" (click)="show_partner_packages_arrivals()" outline icon-only>
                   <ion-icon name='cube' is-active="true"></ion-icon>
                 </button>
               </ion-col>
               <ion-col col-3>
-                <button color="default" *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_unassigned'}" (click)="moves_filter_by_assigned_pkgs(0)" outline icon-only>
+                <button color="default" tooltip="Movimientos sin asignar" positionV="top" arrow *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_unassigned'}" (click)="moves_filter_by_assigned_pkgs(0)" outline icon-only>
                   <ion-icon name='log-in' is-active="true"></ion-icon>
                 </button>
               </ion-col>
               <ion-col col-3>
-                <button color="default" *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_assigned'}" (click)="moves_filter_by_assigned_pkgs(1)" outline icon-only>
+                <button color="default" tooltip="Movimientos asignados" positionV="top" arrow *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_assigned'}" (click)="moves_filter_by_assigned_pkgs(1)" outline icon-only>
                   <ion-icon name='log-out' is-active="true"></ion-icon>
                 </button>
               </ion-col>
@@ -109,7 +109,7 @@
                           </button>
                         </div> -->
                         <div *ngIf="move['result_package_id']">
-                          <button (click)= "open_package(move['result_package_id'][0])" [ngClass]="{'red-icon': move['result_package_id'][0] == current_selected_pkg}" color="default" outline icon-only>
+                          <button tooltip="Ver" positionV="top" arrow (click)= "open_package(move['result_package_id'][0])" [ngClass]="{'red-icon': move['result_package_id'][0] == current_selected_pkg}" color="default" outline icon-only>
                             <ion-icon name='eye' is-active="true"></ion-icon>
                           </button>
                         </div>
@@ -147,7 +147,7 @@
                   <ion-col col-4 class="col add">
                     <ion-row>
                       <ion-col class="col add" col-12>
-                        <button *ngIf="current_selected_partner && selected_partner_name" class="black" icon-only (click)="create_new_package_for_partner()">
+                        <button tooltip="Nuevo Paquete" positionV="top" arrow *ngIf="current_selected_partner && selected_partner_name" class="black" icon-only (click)="create_new_package_for_partner()">
                           <ion-icon name="add-circle"></ion-icon>
                         </button>
                       </ion-col>
