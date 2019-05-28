@@ -216,7 +216,7 @@ export class StockMoveListPage {
   get_user_name(partner_id) {
     let selected_partner = this.users_list.filter(x => x[0] == partner_id)
     this.selected_partner_name = selected_partner[0][1]
-    this.selected_partner_default_shipping_type = selected_partner[0][2]
+    this.selected_partner_default_shipping_type = selected_partner[0][2] || 'pasaran'
     this.changeDetectorRef.detectChanges()
   }
 
@@ -244,7 +244,7 @@ export class StockMoveListPage {
       this.get_partner_empty_packages(partner_id)
     }).catch((mierror) => {
       this.full_stock_moves = []
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror + mierror)
     })
     this.current_list_shown = 'move_list'
     if(this.current_selected_pkg != false){
@@ -285,10 +285,10 @@ export class StockMoveListPage {
         this.current_selected_pkg = linea
         this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
       }).catch((mierror) => {
-        this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+        this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
       })
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -297,7 +297,7 @@ export class StockMoveListPage {
         this.current_selected_pkg = linea
         this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -307,7 +307,7 @@ export class StockMoveListPage {
         this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
       }
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -332,19 +332,19 @@ export class StockMoveListPage {
     this.stockInfo.get_package_lines(package_id).then((lineas:Array<{}>)=> {
       this.current_pkg_info = lineas
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
     this.stockInfo.get_package_info(package_id).then((lineas:Array<{}>) => {
       let current_shipping_selection = lineas[0]['shipping_type'] || lineas[0]['partner_default_shipping_type']
       if (current_shipping_selection == 'pasaran') {
         this.selected_pkg_current_shipping_type = "Pasarán"
-      } else if(current_shipping_selection == 'agency') {
-        this.selected_pkg_current_shipping_type = lineas[0]['delivery_carrier_id'][1]
-      } else if (current_shipping_selection == 'route') {
-        this.selected_pkg_current_shipping_type = lineas[0]['selected_route'][1]
+      } else if(current_shipping_selection == 'agency' && lineas[0]['delivery_carrier_id']) {
+        this.selected_pkg_current_shipping_type = lineas[0]['delivery_carrier_id'][1] || false
+      } else if (current_shipping_selection == 'route' && lineas[0]['selected_route']) {
+        this.selected_pkg_current_shipping_type = lineas[0]['selected_route'][1] || false
       }
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
     this.changeDetectorRef.detectChanges()
   }
@@ -352,21 +352,21 @@ export class StockMoveListPage {
   // Shipping type
   show_shipping_options(package_id) {
     this.stockInfo.get_package_info(package_id).then((lineas:Array<{}>) => {
-      this.selected_pkg_default_shipping = lineas[0]['partner_default_shipping_type']
-      this.selected_pkg_selected_shipping = lineas[0]['shipping_type']
-      this.selected_pkg_delivery_carrier_id = lineas[0]['delivery_carrier_id']
-      this.selected_pkg_selected_route_id = lineas[0]['selected_route']
+      this.selected_pkg_default_shipping = lineas[0]['partner_default_shipping_type'] || false
+      this.selected_pkg_selected_shipping = lineas[0]['shipping_type'] || false
+      this.selected_pkg_delivery_carrier_id = lineas[0]['delivery_carrier_id'] || false
+      this.selected_pkg_selected_route_id = lineas[0]['selected_route'] || false
 
       this.presentShippingSheet(package_id)
       this.changeDetectorRef.detectChanges()
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
   show_shipping_options_line(line_id) {
     this.stockInfo.get_move_line_info(line_id).then((linea:Array<{}>)=> {
-      this.selected_line_default_shipping = linea[0]['partner_default_shipping_type']
+      this.selected_line_default_shipping = linea[0]['partner_default_shipping_type'] || false
       this.selected_line_selected_shipping = linea[0]['shipping_type']
 
       if (!linea[0]['result_package_id']) {
@@ -374,7 +374,7 @@ export class StockMoveListPage {
         this.changeDetectorRef.detectChanges()
       }
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -432,19 +432,20 @@ export class StockMoveListPage {
           this.reload_with_data(this.current_selected_partner, package_id, role)
           //this.show_delivery_carriers(package_id)
         } else if (role == 'route') {
+          // Descomentar show_route para dejar elegir rutas y comentar el reload_with_data. Falta el valor selected_route en stock.quant.package, preguntar a Kiko  si lo metemos.
           this.reload_with_data(this.current_selected_partner, package_id, role)
           //this.show_route_options(package_id)
         }
         this.changeDetectorRef.detectChanges()
       }).catch((mierror) => {
-        this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+        this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
       })
     } else if (type=='line') {
       this.stockInfo.set_move_line_info(package_id, valores).then((resultado:Array<{}>) => {
         this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, role)
         this.changeDetectorRef.detectChanges()
       }).catch((mierror) => {
-        this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+        this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
       })
     }
     
@@ -453,15 +454,16 @@ export class StockMoveListPage {
   // Routes
 
   show_route_options(package_id) {
-    let domain = [['active', '=', true], ['warehouse_selectable', '=', true], ['company_id', '=', this.default_warehouse]]
-    this.stockInfo.get_routes(domain).then((lineas:Array<{}>) => {
+    this.stockInfo.get_routes_for_apk().then((lineas:Array<{}>) => {
       this.presentRoutesSheet(package_id, lineas)
       this.changeDetectorRef.detectChanges()
+    }).catch((mierror) => {
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
   presentRoutesSheet(package_id, routes) {
-
+    
     let buttons_list_routes = []
 
     routes.forEach(route => {
@@ -476,18 +478,21 @@ export class StockMoveListPage {
           },
           'cssClass': 'actionSheetButton'
         }
-        if (this.selected_pkg_selected_route_id[0] == route['id']) {
+        
+        if (this.selected_pkg_selected_route_id && this.selected_pkg_selected_route_id[0] == route['id']) {
           route_button['cssClass'] += ' selected'
           route_button['text'] = '[x]' + route_button['text']
         }
         buttons_list_routes.push(route_button)
+        this.changeDetectorRef.detectChanges()
     });
 
     const actionSheet = this.actionSheetCtrl.create({
       title: 'Selecciona el método de envío',
       buttons: buttons_list_routes,
       'cssClass': 'actionSheetContainer'
-    });
+    })
+
     this.changeDetectorRef.detectChanges()
     actionSheet.present();
   }
@@ -497,7 +502,7 @@ export class StockMoveListPage {
       this.reload_with_data(this.current_selected_partner, package_id)
       this.changeDetectorRef.detectChanges()
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -509,7 +514,7 @@ export class StockMoveListPage {
       this.presentActionSheet(package_id, lineas)
       this.changeDetectorRef.detectChanges()
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -529,7 +534,7 @@ export class StockMoveListPage {
           },
           'cssClass': 'actionSheetButton'
         }
-        if (this.selected_pkg_delivery_carrier_id[0] == carrier['id']) {
+        if (this.selected_pkg_delivery_carrier_id && this.selected_pkg_delivery_carrier_id[0] == carrier['id']) {
           carrier_button['cssClass'] += ' selected'
           carrier_button['text'] = '[x]' + carrier_button['text']
         }
@@ -550,7 +555,7 @@ export class StockMoveListPage {
       this.reload_with_data(this.current_selected_partner, package_id)
       this.changeDetectorRef.detectChanges()
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -560,7 +565,7 @@ export class StockMoveListPage {
     this.stockInfo.delete_package(pkg_id).then((resultado:Array<{}>) => {
       this.reload_with_data(this.current_selected_partner, false, this.current_shipping_type)
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }  
 
@@ -568,7 +573,7 @@ export class StockMoveListPage {
     this.stockInfo.add_package_id_to_line(move_id, null).then((resultado:Array<{}>) => {
       this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 
@@ -579,7 +584,7 @@ export class StockMoveListPage {
         this.changeDetectorRef.detectChanges()
       });
     }).catch((mierror) => {
-      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros')
+      this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror)
     })
   }
 

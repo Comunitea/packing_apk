@@ -13,61 +13,13 @@ import { Storage } from '@ionic/storage';
 export class StockProvider {
 
   STOCK_FIELDS = {
-    'stock.picking.type': {
-      'form': ['id', 'name', 'code', 'warehouse_id', 'default_location_src_id', 'default_location_dest_id'],
-      'tree': ['id', 'name', 'code', 'warehouse_id', 'default_location_src_id', 'default_location_dest_id']
-    },
-
-    'stock.picking':{
-      'form':  ['id', 'name', 'state', 'partner_id', 'scheduled_date', 'location_id', 'location_dest_id', 'note', 'picking_type_id', 'move_lines'],
-      'tree':  ['id', 'name', 'state', 'scheduled_date', 'picking_type_id']
-    },
-
-    'stock.move':{
-      'form': ['id', 'name', 'has_tracking', 'state', 'product_id', 'product_uom', 'picking_id', 'location_id', 'location_dest_id', 'product_uom_qty', 'product_qty', 'display_name', 'need_check', 'need_dest_check', 'inventory_id'],
-      'tree': ['id', 'origin', 'product_default_code', 'product_id', 'has_tracking', 'product_uom', 'picking_id', 'product_qty', 'product_uom_qty', 'state', 'location_id', 'location_dest_id'],
-      'inview': ['product_id', 'product_uom_qty', 'state'],
-      'moves': ['move_dest_ids'],
-      'partner': ['partner_id']
-    },
 
     'stock.move.line':{
-      'form': ['id', 'move_id', 'state', 'product_id', 'picking_id', 'location_id', 'location_dest_id', 'product_uom_qty', 'lot_id', 'package_id', 'product_qty', 'qty_done', 'result_package_id', 'display_name', 'barcode_dest', 'barcode', 'lot_name', 'ordered_qty', 'need_check', 'need_dest_check', 'original_location_short_name', 'final_location_short_name', 'product_short_name', 'product_barcode', 'product_need_check', 'default_code'],
-      'tree': ['id', 'origin', 'name', 'result_package_id', 'move_id', 'product_qty', 'state', 'package_id', 'shipping_type', 'partner_default_shipping_type', 'result_package_shipping_type'],
-      'done': ['id', 'qty_done'],
-      'partner': ['partner_id', 'partner_default_shipping_type']
-    },
-
-    'product.product': {
-      'form': ['id', 'default_code', 'barcode', 'product_tmpl_id', 'product_tmpl_name', 'tracking'],
-      'tree': ['id', 'default_code', 'barcode']
-    },
-
-    'stock.location': {
-      'form': ['id', 'complete_name', 'barcode', 'need_dest_check', 'name', 'location_id', 'need_check'],
-      'tree': ['need_dest_check'],
-      'check': ['need_check']
-    },
-
-    'stock.quant': {
-      'form': ['id', 'product_id', 'location_id', 'lot_id', 'package_id', 'quantity', 'reserved_quantity', 'product_tracking'],
-      'tree': ['id', 'product_id', 'location_id', 'quantity', 'reserved_quantity']
+      'tree': ['id', 'origin', 'name', 'result_package_id', 'move_id', 'product_qty', 'state', 'package_id', 'shipping_type', , 'result_package_shipping_type'],
     },
 
     'stock.quant.package': {
-      'form': ['id', 'name', 'mono_product', 'lot_id', 'location_id', 'location_barcode', 'product_id', 'product_short_name', 'product_tracking', 'quant_ids'],
-      'tree': ['id', 'name', 'move_line_ids', 'shipping_type', 'delivery_carrier_id', 'partner_default_shipping_type', 'selected_route']
-    },
-
-    'stock.inventory': {
-      'form': ['name', 'date', 'state', 'location_id', 'filter', 'product_id', 'package_id', 'lot_id', 'category_id', 'line_ids', 'move_ids', 'original_location_short_name', 'original_product_short_name'],
-      'tree': ['id', 'name', 'date', 'state']
-    },
-
-    'stock.inventory.line': {
-      'form': ['inventory_id', 'product_name', 'product_barcode', 'product_default_code', 'location_id', 'package_id', 'prod_lot_id', 'theoretical_qty', 'product_qty', 'original_location_short_name'],
-      'tree': ['product_name', 'location_id', 'package_id', 'prodlot_name', 'theoretical_qty', 'product_qty', 'original_location_short_name'],
-      'write': ['product_qty']
+      'tree': ['id', 'name', 'move_line_ids', 'shipping_type', 'delivery_carrier_id']
     },
 
     'stock.warehouse': {
@@ -75,12 +27,6 @@ export class StockProvider {
     },
 
     'delivery.carrier': {
-      'form': ['id', 'name'],
-      'tree': ['id', 'name']
-    },
-
-    'stock.location.route': {
-      'form': ['id', 'name'],
       'tree': ['id', 'name']
     }
   }                            
@@ -106,60 +52,8 @@ export class StockProvider {
     'draft': 'close-circle'
   }
 
-  picking_types         
-
   constructor(private odooCon: OdooProvider, public alertCtrl: AlertController, public storage: Storage)  {
-    console.log('Hello StockProvider Provider');
-    this.picking_types = this.get_picking_types([])
-  }
-
-  // Picking Types
-
-  init_values(){
-    this.get_picking_types()
-  }
-
-  get_picking_types(domain=[]){
-    let picking_type_domain=[[]]
-    let self = this
-    if (domain){
-      picking_type_domain.push(domain)
-      }
-    let model = 'stock.picking.type'
-    let fields = this.STOCK_FIELDS[model]['form']
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.search_read(model, domain, fields, 0, 0).then((pt_ids) => {
-        this.storage.set('PICKING_TYPES', pt_ids).then(() => {
-          this.picking_types = pt_ids
-          resolve(pt_ids)
-        })
-      })
-      .catch((err) => {
-        this.picking_types = false
-        reject(false)
-        console.log("Error buscando " + model)
-    });
-    })
-    return promise
-  }
-
-  get_current_picking_type(id) {
-    let self = this
-    let model = 'stock.picking.type'
-    let fields = this.STOCK_FIELDS[model]['form']
-    let domain = [['id', '=', id]]
-
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.search_read(model, domain, fields, 0, 0).then((sp_ids) => {
-       for (let sm_id in sp_ids){sp_ids[sm_id]['model'] = model}
-       resolve(sp_ids)
-      })
-      .catch((err) => {
-        reject(false)
-        console.log("Error buscando " + model)
-    });
-    })
-    return promise
+    console.log('Hello StockProvider Provider');    
   }
 
   // New package
@@ -392,24 +286,6 @@ export class StockProvider {
     return promise
   }
 
-  get_stock_move_lines_list(domain, type='tree') {
-    let self = this
-    let model = 'stock.move.line'
-    let fields = this.STOCK_FIELDS[model][type]
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.search_read(model, domain, fields, 0, 0).then((sp_ids) => {
-       for (let sm_id in sp_ids){sp_ids[sm_id]['model'] = model}
-       resolve(sp_ids)
-      })
-      .catch((err) => {
-        console.log(err)
-        reject(false)
-        console.log("Error buscando " + model)
-    });
-    })
-    return promise
-  }
-
   get_move_line_info(id) {
     let self = this
     let domain = [['id', '=', id]]
@@ -447,24 +323,6 @@ export class StockProvider {
   }
 
   // Users list
-
-  get_users_list(domain, type='partner'){
-    let self = this
-    let model = 'stock.move'
-    let fields = this.STOCK_FIELDS[model][type]
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.search_read(model, domain, fields, 0, 0).then((sp_ids) => {
-       resolve(sp_ids)
-      })
-      .catch((err) => {
-        console.log(err)
-        reject(false)
-        console.log("Error buscando " + model)
-    });
-    })
-    return promise
-  }
-
 
   get_users_list_for_apk(location_dest_id) {
     let self = this
@@ -529,20 +387,22 @@ export class StockProvider {
 
   // Routes
 
-  get_routes(domain) {
+  get_routes_for_apk() {
     let self = this
-    let model = 'stock.location.route'
-    let type = 'tree'
-    let fields = this.STOCK_FIELDS[model][type]
+    let model 
+    let values = {}
+     
+    model = 'delivery.route.path'
     let promise = new Promise( (resolve, reject) => {
-      self.odooCon.search_read(model, domain, fields, 0, 0).then((sp_ids) => {
-       resolve(sp_ids)
+      self.odooCon.execute(model, 'get_routes_for_apk', values).then((done) => {
+       resolve(done)
       })
       .catch((err) => {
         reject(false)
-        console.log("Error buscando " + model)
+        console.log("Error al validar")
     });
     })
+    
     return promise
   }
   
