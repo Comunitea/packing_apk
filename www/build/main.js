@@ -87,6 +87,25 @@ var StockProvider = /** @class */ (function () {
         });
         return promise;
     };
+    StockProvider.prototype.create_new_package_from_move = function (move_id, partner_id) {
+        var self = this;
+        var model;
+        var values = {
+            'move_line_id': move_id,
+            'dest_partner_id': partner_id,
+        };
+        model = 'stock.quant.package';
+        var promise = new Promise(function (resolve, reject) {
+            self.odooCon.execute(model, 'create_new_package_from_move', values).then(function (done) {
+                resolve(done);
+            })
+                .catch(function (err) {
+                reject(false);
+                console.log("Error al validar");
+            });
+        });
+        return promise;
+    };
     StockProvider.prototype.add_package_id_to_line = function (move_id, result_package_id, shipping_type) {
         if (shipping_type === void 0) { shipping_type = false; }
         var self = this;
@@ -384,9 +403,10 @@ var StockProvider = /** @class */ (function () {
     };
     StockProvider = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__odoo_odoo__["a" /* OdooProvider */], __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["b" /* AlertController */], __WEBPACK_IMPORTED_MODULE_3__ionic_storage__["b" /* Storage */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odoo_odoo__["a" /* OdooProvider */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odoo_odoo__["a" /* OdooProvider */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["b" /* AlertController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2_ionic_angular__["b" /* AlertController */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_3__ionic_storage__["b" /* Storage */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__ionic_storage__["b" /* Storage */]) === "function" && _c || Object])
     ], StockProvider);
     return StockProvider;
+    var _a, _b, _c;
 }());
 
 //# sourceMappingURL=stock.js.map
@@ -671,6 +691,7 @@ var StockMoveListPage = /** @class */ (function () {
         this.filtered_arrival_pkg_list = [];
         this.selected_line_default_shipping = [];
         this.selected_line_selected_shipping = [];
+        this.current_pkg_data = [];
         this.move_status[0] = {
             'id': 0,
             'code': 'assigned',
@@ -695,10 +716,9 @@ var StockMoveListPage = /** @class */ (function () {
         this.subs.add(this.dragulaService.removeModel()
             .subscribe(function (_a) {
             var el = _a.el, source = _a.source;
-            if (source.id == "pkgs") {
-                _this.showDestroyConfirmation(parseInt(el.id));
-            }
-            else if (source.id == "pkgs_info") {
+            /* if (source.id == "pkgs") {
+              this.showDestroyConfirmation(parseInt(el.id))
+            } else */ if (source.id == "pkgs_info") {
                 _this.remove_product_from_pkg(parseInt(el.id));
             }
             else if (source.id == "lines" || source.id == "arrival_pkgs") {
@@ -707,7 +727,8 @@ var StockMoveListPage = /** @class */ (function () {
         }));
         dragulaService.destroy("move_lines_container");
         dragulaService.createGroup("move_lines_container", {
-            removeOnSpill: true,
+            removeOnSpill: false,
+            revertOnSpill: true,
             accepts: function (el, target, source, sibling) {
                 // Para que no se puedan arrastrar otras líneas al contenedor.
                 if (source.id == 'lines' && target.id == 'pkgs') {
@@ -803,7 +824,7 @@ var StockMoveListPage = /** @class */ (function () {
         this.current_selected_partner = partner_id;
         this.current_selected_pkg = current_selected_pkg;
         this.get_user_name(this.current_selected_partner);
-        this.show_shipping_type(this.selected_partner_default_shipping_type);
+        this.show_shipping_type('all');
         this.stockInfo.get_stock_move_lines_list_apk(partner_id, this.default_warehouse).then(function (lines) {
             _this.full_stock_moves = [];
             _this.filtered_arrival_pkg_list = [];
@@ -821,7 +842,8 @@ var StockMoveListPage = /** @class */ (function () {
             _this.get_partner_empty_packages(partner_id);
         }).catch(function (mierror) {
             _this.full_stock_moves = [];
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror + mierror)
+            console.log(mierror);
         });
         this.current_list_shown = 'move_list';
         if (this.current_selected_pkg != false) {
@@ -853,18 +875,16 @@ var StockMoveListPage = /** @class */ (function () {
         }
         this.changeDetectorRef.detectChanges();
     };
-    StockMoveListPage.prototype.create_new_package = function (move_id, shipping_type) {
+    StockMoveListPage.prototype.create_new_package = function (move_id) {
         var _this = this;
-        if (shipping_type === void 0) { shipping_type = this.current_shipping_type; }
-        this.stockInfo.create_new_package('stock.quant.package', this.current_selected_partner, shipping_type).then(function (linea) {
-            _this.stockInfo.add_package_id_to_line(move_id, linea).then(function (resultado) {
-                _this.current_selected_pkg = linea;
-                _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, _this.current_shipping_type);
-            }).catch(function (mierror) {
-                _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
-            });
+        this.stockInfo.create_new_package_from_move(move_id, this.current_selected_partner).then(function (linea) {
+            console.log(linea);
+            _this.current_selected_pkg = linea;
+            _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, _this.current_shipping_type);
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.create_new_package_for_partner = function (shipping_type) {
@@ -874,7 +894,9 @@ var StockMoveListPage = /** @class */ (function () {
             _this.current_selected_pkg = linea;
             _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, _this.current_shipping_type);
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.add_product_to_package = function (move_id, reload) {
@@ -885,7 +907,9 @@ var StockMoveListPage = /** @class */ (function () {
                 _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, _this.current_shipping_type);
             }
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.add_package_content_to_package = function (package_id) {
@@ -904,9 +928,12 @@ var StockMoveListPage = /** @class */ (function () {
         this.current_selected_pkg = package_id;
         this.changeDetectorRef.detectChanges();
         this.stockInfo.get_package_lines(package_id).then(function (lineas) {
-            _this.current_pkg_info = lineas;
+            _this.current_pkg_info = lineas['move_lines_info'];
+            _this.current_pkg_data = lineas['package_info'];
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
         this.stockInfo.get_package_info(package_id).then(function (lineas) {
             var current_shipping_selection = lineas[0]['shipping_type'] || lineas[0]['partner_default_shipping_type'];
@@ -920,7 +947,9 @@ var StockMoveListPage = /** @class */ (function () {
                 _this.selected_pkg_current_shipping_type = lineas[0]['selected_route'][1] || false;
             }
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
         this.changeDetectorRef.detectChanges();
     };
@@ -935,7 +964,9 @@ var StockMoveListPage = /** @class */ (function () {
             _this.presentShippingSheet(package_id);
             _this.changeDetectorRef.detectChanges();
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.show_shipping_options_line = function (line_id) {
@@ -948,7 +979,9 @@ var StockMoveListPage = /** @class */ (function () {
                 _this.changeDetectorRef.detectChanges();
             }
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.presentShippingSheet = function (package_id, type) {
@@ -1007,7 +1040,9 @@ var StockMoveListPage = /** @class */ (function () {
                 }
                 _this.changeDetectorRef.detectChanges();
             }).catch(function (mierror) {
-                _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+                //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+                _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+                console.log(mierror);
             });
         }
         else if (type == 'line') {
@@ -1015,7 +1050,9 @@ var StockMoveListPage = /** @class */ (function () {
                 _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, role);
                 _this.changeDetectorRef.detectChanges();
             }).catch(function (mierror) {
-                _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+                //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+                _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, role);
+                console.log(mierror);
             });
         }
     };
@@ -1026,7 +1063,9 @@ var StockMoveListPage = /** @class */ (function () {
             _this.presentRoutesSheet(package_id, lineas);
             _this.changeDetectorRef.detectChanges();
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.presentRoutesSheet = function (package_id, routes) {
@@ -1065,7 +1104,9 @@ var StockMoveListPage = /** @class */ (function () {
             _this.reload_with_data(_this.current_selected_partner, package_id);
             _this.changeDetectorRef.detectChanges();
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, package_id);
+            console.log(mierror);
         });
     };
     // Delivery carriers
@@ -1076,7 +1117,9 @@ var StockMoveListPage = /** @class */ (function () {
             _this.presentActionSheet(package_id, lineas);
             _this.changeDetectorRef.detectChanges();
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, package_id);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.presentActionSheet = function (package_id, delivery_carriers) {
@@ -1114,7 +1157,9 @@ var StockMoveListPage = /** @class */ (function () {
             _this.reload_with_data(_this.current_selected_partner, package_id);
             _this.changeDetectorRef.detectChanges();
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, package_id);
+            console.log(mierror);
         });
     };
     // Package
@@ -1123,7 +1168,9 @@ var StockMoveListPage = /** @class */ (function () {
         this.stockInfo.delete_package(pkg_id).then(function (resultado) {
             _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.remove_product_from_pkg = function (move_id) {
@@ -1131,7 +1178,9 @@ var StockMoveListPage = /** @class */ (function () {
         this.stockInfo.add_package_id_to_line(move_id, null).then(function (resultado) {
             _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, _this.current_shipping_type);
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, _this.current_selected_pkg, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     StockMoveListPage.prototype.get_partner_empty_packages = function (partner_id) {
@@ -1142,7 +1191,9 @@ var StockMoveListPage = /** @class */ (function () {
                 _this.changeDetectorRef.detectChanges();
             });
         }).catch(function (mierror) {
-            _this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros' + mierror);
+            //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+            _this.reload_with_data(_this.current_selected_partner, false, _this.current_shipping_type);
+            console.log(mierror);
         });
     };
     // Reload
@@ -1154,14 +1205,12 @@ var StockMoveListPage = /** @class */ (function () {
     };
     StockMoveListPage = StockMoveListPage_1 = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["m" /* Component */])({
-            selector: 'stock-move-list',template:/*ion-inline-start:"/opt/ionic-projects/stock_move_apk/src/pages/stock-move-list/stock-move-list.html"*/'<!--\n  Generated template for the PickingListPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title *ngIf="current_selected_partner && selected_partner_name">Movimientos de stock: {{ selected_partner_name }}\n    </ion-title>\n    <ion-title *ngIf="!current_selected_partner || !selected_partner_name">Movimientos de stock</ion-title>\n\n    <ion-buttons end>\n\n      <button tooltip="Pasarán" positionV="bottom" ion-button icon-only item-end [ngClass]="{\'red-icon\': current_shipping_type == \'pasaran\'}" (click)="show_shipping_type(\'pasaran\', true)" outline icon-only>\n        <ion-icon name="hand" is-active="true"></ion-icon>\n      </button>\n        \n      <button tooltip="Agencia" positionV="bottom" ion-button icon-only item-end [ngClass]="{\'red-icon\': current_shipping_type == \'agency\'}" (click)="show_shipping_type(\'agency\', true)" outline icon-only>\n        <ion-icon name="home" is-active="true"></ion-icon>\n      </button>\n\n      <button tooltip="Ruta" positionV="bottom" ion-button icon-only item-end [ngClass]="{\'red-icon\': current_shipping_type == \'route\'}" (click)="show_shipping_type(\'route\', true)" outline icon-only>\n        <ion-icon name="compass" is-active="true"></ion-icon>\n      </button>\n    </ion-buttons>\n\n  </ion-navbar> \n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-2 col-xs-12 col-sm-12 col-md-6 col-lg-2 col-xl-2>\n        <ion-row>\n          <ion-grid>\n            <ion-scroll id="users" scrollY=true>\n              <ion-row class="row header">\n                <ion-col col-12 class="col">\n                    Clientes\n                </ion-col>\n              </ion-row>\n              <ion-row class="row">\n                <ion-col col-12 class="col">\n                  <ion-searchbar (ionInput)="filter_users_list($event)"></ion-searchbar>\n                </ion-col>\n              </ion-row>\n              <ion-row class="row" *ngFor="let user of users_list">\n                <ion-col col-12 class="col fat-col" [ngClass]="{\'red-background\': user[0] == current_selected_partner}" (click)= "get_partner_move_lines_apk(user[0])">\n                    {{ user[1] }}\n                </ion-col>\n              </ion-row>\n            </ion-scroll>\n          </ion-grid>\n        </ion-row>\n      </ion-col>\n      <ion-col col-6 col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xl-6>\n        <ion-grid>\n          <ion-scroll scrollY=true>\n            <ion-row class="row header filter" *ngIf="current_selected_partner && selected_partner_name">\n              <ion-col col-3>\n                <button color="default" tooltip="Movimientos" positionV="top" arrow [ngClass]="{\'red-icon\': current_list_shown == \'move_list\'}" (click)="show_partner_move_lines()" outline icon-only>\n                  <ion-icon name=\'clipboard\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n              <ion-col col-3>\n                <button color="default" tooltip="Paquetes Entrantes" positionV="top" arrow [ngClass]="{\'red-icon\': current_list_shown == \'package_list\'}" (click)="show_partner_packages_arrivals()" outline icon-only>\n                  <ion-icon name=\'cube\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n              <ion-col col-3>\n                <button color="default" tooltip="Movimientos sin asignar" positionV="top" arrow *ngIf="current_list_shown == \'move_list\'  || current_list_shown == \'filtered_assigned\'  || current_list_shown == \'filtered_unassigned\'" [ngClass]="{\'red-icon\': current_list_shown == \'filtered_unassigned\'}" (click)="moves_filter_by_assigned_pkgs(0)" outline icon-only>\n                  <ion-icon name=\'log-in\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n              <ion-col col-3>\n                <button color="default" tooltip="Movimientos asignados" positionV="top" arrow *ngIf="current_list_shown == \'move_list\'  || current_list_shown == \'filtered_assigned\'  || current_list_shown == \'filtered_unassigned\'" [ngClass]="{\'red-icon\': current_list_shown == \'filtered_assigned\'}" (click)="moves_filter_by_assigned_pkgs(1)" outline icon-only>\n                  <ion-icon name=\'log-out\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n            </ion-row>\n            <div *ngIf="current_list_shown == \'move_list\'  || current_list_shown == \'filtered_assigned\'  || current_list_shown == \'filtered_unassigned\'">\n              <ion-row class="row header">\n                <ion-col col-1 class="col">ID</ion-col>\n                <ion-col col-2 class="col">Pedido</ion-col>\n                <ion-col col-1 class="col">UDs.</ion-col>\n                <ion-col col-3 class="col">P.Entrada</ion-col>\n                <ion-col col-3 class="col">P.Salida</ion-col>\n                <ion-col col-2 class="col">Opc.</ion-col>\n              </ion-row>\n              <div dragula="move_lines_container" id="lines" [dragulaModel]="users_list">\n                <div *ngFor="let move of full_stock_moves" id="{{move[\'id\']}}" (press)="show_shipping_options_line(move[\'id\'])">\n                    <ion-row class="row" *ngIf="((move[\'shipping_type\'] && move[\'shipping_type\'] == current_shipping_type)) && ((current_list_shown == \'filtered_unassigned\' && !move[\'result_package_id\']) || (current_list_shown == \'filtered_assigned\' && move[\'result_package_id\']) || (current_list_shown == \'move_list\'))">\n                      <ion-col col-1 class="col product-col">{{move[\'id\']}}</ion-col>\n                      <ion-col col-2 class="col product-col">{{move[\'origin\']}}</ion-col>\n                      <ion-col col-1 class="col product-col">{{move[\'product_qty\']}}</ion-col>\n                      <ion-col col-3 class="col product-col">{{move[\'package_id\'][1] || \'N\'}}</ion-col>\n                      <ion-col col-3 class="col product-col">{{move[\'result_package_id\'][1] || \'N\'}}</ion-col>\n                      <ion-col col-2 class="col product-col options">\n                        <!-- <div *ngIf="!move[\'result_package_id\']">\n                          <button *ngIf="!current_selected_pkg" color="default" (click)="create_new_package(move[\'id\'])" outline icon-only>\n                            <ion-icon name=\'add-circle\' is-active="true"></ion-icon>\n                          </button>\n                          <button *ngIf="current_selected_pkg" color="default" (click)="add_product_to_package(move[\'id\'])" outline icon-only>\n                            <ion-icon name=\'add-circle\' is-active="true"></ion-icon>\n                          </button>\n                        </div> -->\n                        <div *ngIf="move[\'result_package_id\']">\n                          <button tooltip="Ver" positionV="top" arrow (click)= "open_package(move[\'result_package_id\'][0])" [ngClass]="{\'red-icon\': move[\'result_package_id\'][0] == current_selected_pkg}" color="default" outline icon-only>\n                            <ion-icon name=\'eye\' is-active="true"></ion-icon>\n                          </button>\n                        </div>\n                      </ion-col>\n                      <ion-col col-12 class="col product-col"><strong>{{move[\'name\']}}</strong></ion-col>\n                    </ion-row>\n                  </div>\n              </div>\n            </div>\n            <div *ngIf="current_list_shown == \'package_list\'">\n              <ion-row class="row header">\n                <ion-col col-6 class="col">ID</ion-col>\n                <ion-col col-6 class="col">Nombre</ion-col>\n              </ion-row>\n              <div dragula="move_lines_container" id="arrival_pkgs" [dragulaModel]="current_partner_arrival_pkgs_list">\n                <ion-row class="row" *ngFor="let arrival_pkg of current_partner_arrival_pkgs_list" id="{{arrival_pkg[0]}}">\n                  <ion-col col-6 class="col product-col">{{arrival_pkg[0]}}</ion-col>\n                  <ion-col col-6 class="col product-col">{{arrival_pkg[1]}}</ion-col>\n                </ion-row>\n              </div>\n            </div>\n          </ion-scroll>\n        </ion-grid>\n      </ion-col>\n\n      <ion-col col-4 col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4>\n        <ion-row>\n          <ion-grid>\n            <ion-scroll scrollY=true>\n              <div *ngIf="current_selected_pkg == false">\n                <ion-row class="row header-reddish">\n                  <ion-col col-8 class="col pkg">\n                    Paquetes\n                  </ion-col>\n                  <ion-col col-4 class="col add">\n                    <ion-row>\n                      <ion-col class="col add" col-12>\n                        <button tooltip="Nuevo Paquete" positionV="top" arrow *ngIf="current_selected_partner && selected_partner_name" class="black" icon-only (click)="create_new_package_for_partner()">\n                          <ion-icon name="add-circle"></ion-icon>\n                        </button>\n                      </ion-col>\n                    </ion-row>\n                  </ion-col>\n                </ion-row>\n                <ion-row class="row" dragula="move_lines_container" id="pkgs" [dragulaModel]="current_partner_pkg_list">\n                  <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg[0]}}" [ngClass]="{\'red-background\': pkg[0] == current_selected_pkg, \'hidden-col\': ((!pkg[2] && pkg[3] != current_shipping_type) || (pkg[2] && pkg[2] != current_shipping_type))}" (click)="open_package(pkg[0])" (press)="show_shipping_options(pkg[0])">\n                    <ion-row>{{pkg[1]}}</ion-row>\n                  </ion-col>\n                </ion-row>\n              </div>\n              <div *ngIf="current_selected_pkg != false">\n                <ion-row class="row header-reddish">\n                  <ion-col col-8 class="col pkg">\n                    Paquetes\n                  </ion-col>\n                  <ion-col col-4 class="col add">\n                    <ion-row>\n                      <ion-col class="col add" col-12>\n                        <button *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg" class="black" icon-only (click)="showDestroyConfirmation(current_selected_pkg)">\n                          <ion-icon name="remove-circle"></ion-icon>\n                        </button>\n                      </ion-col>\n                    </ion-row>\n                  </ion-col>\n                </ion-row>\n                <ion-row class="row header">\n                  <ion-col col-6 class="col pkg">\n                    Contenido del paquete\n                  </ion-col>\n                  <ion-col col-6 class="col add">\n                    <span *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg">Envío: {{ selected_pkg_current_shipping_type }}</span>\n                  </ion-col>\n                </ion-row>\n                <ion-row class="row header">\n                  <ion-col col-6 class="col">Nombre</ion-col>\n                  <ion-col col-6 class="col">Cant.</ion-col>\n                </ion-row>\n                <ion-row>\n                  <ion-col col-12 class="col">\n                    <ion-row class="row" (click)="reload_with_data(current_selected_partner, false, current_shipping_type)">\n                      <ion-icon name="undo"></ion-icon>\n                    </ion-row>\n                  </ion-col>\n                </ion-row>\n                <div dragula="move_lines_container" id="pkgs_info" [dragulaModel]="current_pkg_info">\n                  <ion-row class="row" id="{{pkg_line[0]}}" *ngFor="let pkg_line of current_pkg_info">\n                    <ion-col col-6 class="col product-col">\n                      <ion-row>{{pkg_line[1]}}</ion-row>\n                    </ion-col>\n                    <ion-col col-6 class="col product-col">\n                      <ion-row>{{pkg_line[2]}}</ion-row>\n                    </ion-col>\n                  </ion-row>\n                </div>\n              </div>\n            </ion-scroll>\n          </ion-grid>\n        </ion-row>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n</ion-content>'/*ion-inline-end:"/opt/ionic-projects/stock_move_apk/src/pages/stock-move-list/stock-move-list.html"*/,
+            selector: 'stock-move-list',template:/*ion-inline-start:"/opt/ionic-projects/stock_move_apk/src/pages/stock-move-list/stock-move-list.html"*/'<!--\n  Generated template for the PickingListPage page.\n\n  See http://ionicframework.com/docs/components/#navigation for more info on\n  Ionic pages and navigation.\n-->\n<ion-header>\n  <ion-navbar>\n    <button ion-button menuToggle>\n      <ion-icon name="menu"></ion-icon>\n    </button>\n    <ion-title *ngIf="current_selected_partner && selected_partner_name">Movimientos de stock: {{ selected_partner_name }}\n    </ion-title>\n    <ion-title *ngIf="!current_selected_partner || !selected_partner_name">Movimientos de stock</ion-title>\n\n    <ion-buttons end>\n\n      <button tooltip="Todos" positionV="bottom" ion-button icon-only item-end [ngClass]="{\'all-type\': current_shipping_type == \'all\'}" (click)="show_shipping_type(\'all\', false)" outline icon-only>\n          <ion-icon name="clipboard" is-active="true"></ion-icon>\n        </button>\n\n      <button tooltip="Pasarán" positionV="bottom" ion-button icon-only item-end [ngClass]="{\'pasaran-type\': current_shipping_type == \'pasaran\'}" (click)="show_shipping_type(\'pasaran\', true)" outline icon-only>\n        <ion-icon name="hand" is-active="true"></ion-icon>\n      </button>\n        \n      <button tooltip="Agencia" positionV="bottom" ion-button icon-only item-end [ngClass]="{\'agency-type\': current_shipping_type == \'agency\'}" (click)="show_shipping_type(\'agency\', true)" outline icon-only>\n        <ion-icon name="subway" is-active="true"></ion-icon>\n      </button>\n\n      <button tooltip="Ruta" positionV="bottom" ion-button icon-only item-end [ngClass]="{\'route-type\': current_shipping_type == \'route\'}" (click)="show_shipping_type(\'route\', true)" outline icon-only>\n        <ion-icon name="git-branch" is-active="true"></ion-icon>\n      </button>\n    </ion-buttons>\n\n  </ion-navbar> \n</ion-header>\n\n<ion-content padding>\n  <ion-grid>\n    <ion-row>\n      <ion-col col-2 col-xs-12 col-sm-12 col-md-6 col-lg-2 col-xl-2>\n        <ion-row>\n          <ion-grid>\n            <ion-scroll id="users" scrollY=true>\n              <ion-row class="row header">\n                <ion-col col-12 class="col">\n                    Clientes\n                </ion-col>\n              </ion-row>\n              <ion-row class="row">\n                <ion-col col-12 class="col">\n                  <ion-searchbar (ionInput)="filter_users_list($event)"></ion-searchbar>\n                </ion-col>\n              </ion-row>\n              <ion-row class="row" *ngFor="let user of users_list">\n                <ion-col col-12 class="col fat-col" [ngClass]="{\'red-background\': user[0] == current_selected_partner}" (click)= "get_partner_move_lines_apk(user[0])">\n                    {{ user[1] }}\n                </ion-col>\n              </ion-row>\n            </ion-scroll>\n          </ion-grid>\n        </ion-row>\n      </ion-col>\n      <ion-col col-6 col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xl-6>\n        <ion-grid>\n          <ion-scroll scrollY=true>\n            <ion-row class="row header filter" *ngIf="current_selected_partner && selected_partner_name">\n              <ion-col col-3>\n                <button color="default" tooltip="Movimientos" positionV="top" arrow [ngClass]="{\'red-icon\': current_list_shown == \'move_list\'}" (click)="show_partner_move_lines()" outline icon-only>\n                  <ion-icon name=\'paper\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n              <ion-col col-3>\n                <button color="default" tooltip="Paquetes Entrantes" positionV="top" arrow [ngClass]="{\'red-icon\': current_list_shown == \'package_list\'}" (click)="show_partner_packages_arrivals()" outline icon-only>\n                  <ion-icon name=\'cube\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n              <ion-col col-3>\n                <button color="default" tooltip="Movimientos sin asignar" positionV="top" arrow *ngIf="current_list_shown == \'move_list\'  || current_list_shown == \'filtered_assigned\'  || current_list_shown == \'filtered_unassigned\'" [ngClass]="{\'red-icon\': current_list_shown == \'filtered_unassigned\'}" (click)="moves_filter_by_assigned_pkgs(0)" outline icon-only>\n                  <ion-icon name=\'log-in\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n              <ion-col col-3>\n                <button color="default" tooltip="Movimientos asignados" positionV="top" arrow *ngIf="current_list_shown == \'move_list\'  || current_list_shown == \'filtered_assigned\'  || current_list_shown == \'filtered_unassigned\'" [ngClass]="{\'red-icon\': current_list_shown == \'filtered_assigned\'}" (click)="moves_filter_by_assigned_pkgs(1)" outline icon-only>\n                  <ion-icon name=\'log-out\' is-active="true"></ion-icon>\n                </button>\n              </ion-col>\n            </ion-row>\n            <div *ngIf="current_list_shown == \'move_list\'  || current_list_shown == \'filtered_assigned\'  || current_list_shown == \'filtered_unassigned\'">\n              <ion-row class="row header">\n                <ion-col col-3 class="col">Pedido</ion-col>\n                <ion-col col-3 class="col">P.Entrada</ion-col>\n                <ion-col col-3 class="col">P.Salida</ion-col>\n                <ion-col col-3 class="col">Opc.</ion-col>\n              </ion-row>\n              <div dragula="move_lines_container" id="lines" [dragulaModel]="users_list">\n                <div *ngFor="let move of full_stock_moves" id="{{move[\'id\']}}" (press)="show_shipping_options_line(move[\'id\'])">\n                    <ion-row class="row" \n                    \n                    *ngIf="((move[\'shipping_type\'] && move[\'shipping_type\'] == current_shipping_type) || current_shipping_type == \'all\') && ((current_list_shown == \'filtered_unassigned\' && !move[\'result_package_id\']) || (current_list_shown == \'filtered_assigned\' && move[\'result_package_id\']) || (current_list_shown == \'move_list\'))">\n                      <ion-col col-12 \n                      [ngClass]="{\'pasaran-type\': move[\'shipping_type\'] && move[\'shipping_type\'] == \'pasaran\', \'route-type\': move[\'shipping_type\'] && move[\'shipping_type\'] == \'route\', \'agency-type\': move[\'shipping_type\'] && move[\'shipping_type\'] == \'agency\'}" \n                      class="col product-col"><strong>{{move[\'name\']}}</strong><strong class="product-units">{{move[\'product_qty\']}} Ud(s).</strong></ion-col>\n                      \n                      <ion-col col-3 class="col product-col shipping-color">{{move[\'origin\']}}</ion-col>\n                      <ion-col col-3 class="col product-col shipping-color">{{move[\'package_id\'][1] || \'N\'}}</ion-col>\n                      <ion-col col-3 class="col product-col shipping-color">{{move[\'result_package_id\'][1] || \'N\'}}</ion-col>\n                      <ion-col col-3 class="col product-col options shipping-color">\n                        <!-- <div *ngIf="!move[\'result_package_id\']">\n                          <button *ngIf="!current_selected_pkg" color="default" (click)="create_new_package(move[\'id\'])" outline icon-only>\n                            <ion-icon name=\'add-circle\' is-active="true"></ion-icon>\n                          </button>\n                          <button *ngIf="current_selected_pkg" color="default" (click)="add_product_to_package(move[\'id\'])" outline icon-only>\n                            <ion-icon name=\'add-circle\' is-active="true"></ion-icon>\n                          </button>\n                        </div> -->\n                        <ion-row *ngIf="move[\'result_package_id\']">\n                          <button tooltip="Ver" positionV="top" class="row-button" arrow (click)= "open_package(move[\'result_package_id\'][0])" [ngClass]="{\'red-icon\': move[\'result_package_id\'][0] == current_selected_pkg}" color="default" outline icon-only>\n                            <ion-icon name=\'eye\' is-active="true"></ion-icon>\n                          </button>\n                          <button tooltip="Desempaquetar" class="row-button" positionV="top" arrow (click)= "remove_product_from_pkg(move[\'id\'])" color="default" outline icon-only>\n                            <ion-icon name="remove-circle"></ion-icon>\n                          </button>\n                        </ion-row>\n                      </ion-col>\n                      \n                    </ion-row>\n                  </div>\n              </div>\n            </div>\n            <div *ngIf="current_list_shown == \'package_list\'">\n              <ion-row class="row header">\n                <ion-col col-6 class="col">ID</ion-col>\n                <ion-col col-6 class="col">Nombre</ion-col>\n              </ion-row>\n              <div dragula="move_lines_container" id="arrival_pkgs" [dragulaModel]="current_partner_arrival_pkgs_list">\n                <ion-row class="row" *ngFor="let arrival_pkg of current_partner_arrival_pkgs_list" id="{{arrival_pkg[0]}}">\n                  <ion-col col-6 class="col product-col">{{arrival_pkg[0]}}</ion-col>\n                  <ion-col col-6 class="col product-col">{{arrival_pkg[1]}}</ion-col>\n                </ion-row>\n              </div>\n            </div>\n          </ion-scroll>\n        </ion-grid>\n      </ion-col>\n\n      <ion-col col-4 col-xs-12 col-sm-12 col-md-6 col-lg-4 col-xl-4>\n        <ion-row>\n          <ion-grid>\n            <ion-scroll scrollY=true>\n              <div *ngIf="current_selected_pkg == false">\n                <ion-row class="row header-reddish">\n                  <ion-col col-8 class="col pkg">\n                    Paquetes\n                  </ion-col>\n                  <ion-col col-4 class="col add">\n                    <ion-row>\n                      <ion-col class="col add" col-12>\n                        <button tooltip="Nuevo Paquete" positionV="top" arrow *ngIf="(current_selected_partner && selected_partner_name) && current_shipping_type != \'all\'" class="black" icon-only (click)="create_new_package_for_partner()">\n                          <ion-icon name="add-circle"></ion-icon>\n                        </button>\n                      </ion-col>\n                    </ion-row>\n                  </ion-col>\n                </ion-row>\n                <ion-row class="row" dragula="move_lines_container" id="pkgs" [dragulaModel]="current_partner_pkg_list">\n                  <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg[0]}}" [ngClass]="{\'red-background\': pkg[0] == current_selected_pkg, \'hidden-col\': ((!pkg[2] && pkg[3] != current_shipping_type) || (pkg[2] && pkg[2] != current_shipping_type)) && current_shipping_type != \'all\', \'pasaran-type\': pkg[2] == \'pasaran\', \'route-type\': pkg[2] == \'route\', \'agency-type\': pkg[2] == \'agency\'}" (click)="open_package(pkg[0])" (press)="show_shipping_options(pkg[0])">\n                    <ion-row>{{pkg[1]}}</ion-row>\n                  </ion-col>\n                </ion-row>\n              </div>\n              <div *ngIf="current_selected_pkg != false">\n                <ion-row class="row header-reddish">\n                  <ion-col col-6 class="col pkg">\n                    {{current_pkg_data[\'name\']}}\n                  </ion-col>\n                  <ion-col col-6 class="col add">\n                    <ion-row>\n                      <button class="black" icon-only (click)="reload_with_data(current_selected_partner, false, current_shipping_type)">\n                        <ion-icon name="undo"></ion-icon>\n                      </button>\n                      <button *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg" class="black" icon-only (click)="showDestroyConfirmation(current_selected_pkg)">\n                        <ion-icon name="remove-circle"></ion-icon>\n                      </button>\n                    </ion-row>\n                  </ion-col>\n                </ion-row>\n                <ion-row class="row header">\n                  <ion-col col-12 class="col add">\n                    <span *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg">Envío: {{current_pkg_data[\'info_str\']}}</span>\n                  </ion-col>\n                </ion-row>\n                <!-- <ion-row class="row header">\n                  <ion-col col-6 class="col">Nombre</ion-col>\n                  <ion-col col-6 class="col">Cant.</ion-col>\n                </ion-row> -->\n                <!-- <ion-row>\n                  <ion-col col-12 class="col">\n                    <ion-row class="row" (click)="reload_with_data(current_selected_partner, false, current_shipping_type)">\n                      <ion-icon name="undo"></ion-icon>\n                    </ion-row>\n                  </ion-col>\n                </ion-row> -->\n                <div dragula="move_lines_container" id="pkgs_info" [dragulaModel]="current_pkg_info">\n                  <ion-row class="row" id="{{pkg_line[0]}}" *ngFor="let pkg_line of current_pkg_info">\n                    <ion-col col-6 class="col product-col">\n                      <ion-row>{{pkg_line[1]}}</ion-row>\n                    </ion-col>\n                    <ion-col col-6 class="col product-col">\n                      <ion-row>{{pkg_line[2]}}</ion-row>\n                    </ion-col>\n                  </ion-row>\n                </div>\n              </div>\n            </ion-scroll>\n          </ion-grid>\n        </ion-row>\n      </ion-col>\n    </ion-row>\n  </ion-grid>\n</ion-content>'/*ion-inline-end:"/opt/ionic-projects/stock_move_apk/src/pages/stock-move-list/stock-move-list.html"*/,
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1_ionic_angular__["b" /* AlertController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* ActionSheetController */], __WEBPACK_IMPORTED_MODULE_5_ng2_dragula__["b" /* DragulaService */],
-            __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */], __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* ViewController */], __WEBPACK_IMPORTED_MODULE_3__ionic_storage__["b" /* Storage */],
-            __WEBPACK_IMPORTED_MODULE_2__providers_stock_stock__["a" /* StockProvider */], __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* ChangeDetectorRef */]])
+        __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["b" /* AlertController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["b" /* AlertController */]) === "function" && _a || Object, typeof (_b = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* ActionSheetController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["a" /* ActionSheetController */]) === "function" && _b || Object, typeof (_c = typeof __WEBPACK_IMPORTED_MODULE_5_ng2_dragula__["b" /* DragulaService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_5_ng2_dragula__["b" /* DragulaService */]) === "function" && _c || Object, typeof (_d = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["g" /* NavController */]) === "function" && _d || Object, typeof (_e = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["h" /* NavParams */]) === "function" && _e || Object, typeof (_f = typeof __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* ViewController */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1_ionic_angular__["j" /* ViewController */]) === "function" && _f || Object, typeof (_g = typeof __WEBPACK_IMPORTED_MODULE_3__ionic_storage__["b" /* Storage */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__ionic_storage__["b" /* Storage */]) === "function" && _g || Object, typeof (_h = typeof __WEBPACK_IMPORTED_MODULE_2__providers_stock_stock__["a" /* StockProvider */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__providers_stock_stock__["a" /* StockProvider */]) === "function" && _h || Object, typeof (_j = typeof __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* ChangeDetectorRef */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__angular_core__["j" /* ChangeDetectorRef */]) === "function" && _j || Object])
     ], StockMoveListPage);
     return StockMoveListPage;
-    var StockMoveListPage_1;
+    var StockMoveListPage_1, _a, _b, _c, _d, _e, _f, _g, _h, _j;
 }());
 
 //# sourceMappingURL=stock-move-list.js.map

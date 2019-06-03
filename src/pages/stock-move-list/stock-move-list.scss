@@ -16,7 +16,7 @@ stock-move-list {
     }
 
     .header-reddish .col {
-        background-color: lightcoral;
+        background-color: #7C7BAD;
     }
 
     .header-reddish .col.add, .row.header .col.add {
@@ -42,22 +42,22 @@ stock-move-list {
         text-align: center;
     }
 
-    .product-col, .fat-col, .row.header.filter .col {
+    /* .product-col, .fat-col, .row.header.filter .col {
         background-image: linear-gradient(white, white, lightgrey);
-    }
+    } */
 
     .fat-col.blue-background {
-        background-color: lightblue;
+        background-color: #7C7BAD;
     }
 
     .fat-col.red-background {
-        background-color: #e90d0d;
+        background-color: #7C7BAD;
         background-image: none;
         color: white;
     }
 
     .red-icon {
-        color: #e90d0d;
+        color: #7C7BAD;
     }
 
     ion-scroll {
@@ -77,7 +77,7 @@ stock-move-list {
     }
 
     .add .black {
-        background-color: lightcoral;
+        background-color: #7C7BAD;
     }
 
     .add .add {
@@ -107,6 +107,36 @@ stock-move-list {
 
     .hidden-col, .hidden-row {
         display: none;
+    }
+
+    strong.product-units{
+        float: right;
+    }
+
+    .tab-button-icon {
+        background-color: #7C7BAD;
+    }
+
+    .pasaran-type {
+        background-color: rgb(140, 160, 160);
+    }
+    .shipping-color {
+        color: rgb(160, 160, 160)
+    }
+    .route-type {
+        background-color: rgb(186, 203, 228);
+    }
+
+    .agency-type {
+        background-color: rgb(248, 215, 239);
+    }
+
+    .all-type {
+        background-image: linear-gradient(white, white, #7C7BAD);
+    }
+
+    .row-button {
+        padding: 0px;
     }
 
 }

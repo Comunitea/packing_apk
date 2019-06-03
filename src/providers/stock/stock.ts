@@ -79,6 +79,28 @@ export class StockProvider {
     
   }
 
+  create_new_package_from_move(move_id, partner_id) {
+    let self = this
+    let model 
+    let values = {
+      'move_line_id': move_id,
+      'dest_partner_id': partner_id,
+    }
+     
+    model = 'stock.quant.package'
+    let promise = new Promise( (resolve, reject) => {
+      self.odooCon.execute(model, 'create_new_package_from_move', values).then((done) => {
+       resolve(done)
+      })
+      .catch((err) => {
+        reject(false)
+        console.log("Error al validar")
+    });
+    })
+    
+    return promise
+  }
+
   add_package_id_to_line(move_id, result_package_id, shipping_type=false){
           
     let self = this
