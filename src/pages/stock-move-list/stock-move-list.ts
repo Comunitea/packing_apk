@@ -307,13 +307,15 @@ export class StockMoveListPage {
   }
 
   add_product_to_package(move_id, reload=true) {
-    this.stockInfo.add_package_id_to_line(move_id, this.current_selected_pkg, this.current_shipping_type).then((resultado:Array<{}>) => {
+    this.stockInfo.add_package_id_to_line(move_id, this.current_selected_pkg, false).then((resultado:Array<{}>) => {
       if (reload == true) {
         this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
       }
     }).catch((mierror) => {
       //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
+      if (reload == true) {
+        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
+      }
       console.log(mierror)
     })
   }

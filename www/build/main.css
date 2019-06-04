@@ -25803,8 +25803,9 @@ stock-move-list .header-reddish .col.pkg, stock-move-list .row.header .col.pkg {
 }
 
 stock-move-list .fat-col {
-  padding: 25px;
+  padding: 10px;
   text-align: center;
+  font-size: 1rem;
 }
 
 stock-move-list .fat-col.blue-background {
@@ -25818,7 +25819,7 @@ stock-move-list .fat-col.red-background {
 }
 
 stock-move-list .red-icon {
-  color: #7C7BAD;
+  color: black !important;
 }
 
 stock-move-list ion-scroll {
@@ -25834,7 +25835,7 @@ stock-move-list ion-scroll.scroll-y div.scroll-content {
 }
 
 stock-move-list #pkgs, stock-move-list #pkgs_info, stock-move-list #lines, stock-move-list #arrival_pkgs {
-  min-height: 50px;
+  min-height: 10px;
 }
 
 stock-move-list .add .black {
@@ -25880,7 +25881,7 @@ stock-move-list .tab-button-icon {
 }
 
 stock-move-list .pasaran-type {
-  background-color: #8ca0a0;
+  background-color: #fafaeb;
 }
 
 stock-move-list .shipping-color {
@@ -25888,11 +25889,11 @@ stock-move-list .shipping-color {
 }
 
 stock-move-list .route-type {
-  background-color: #bacbe4;
+  background-color: #faefef;
 }
 
 stock-move-list .agency-type {
-  background-color: #f8d7ef;
+  background-color: #cef0ef;
 }
 
 stock-move-list .all-type {
@@ -25902,4 +25903,32 @@ stock-move-list .all-type {
 
 stock-move-list .row-button {
   padding: 0px;
+}
+
+stock-move-list .add .row {
+  float: right;
+}
+
+stock-move-list #lines, stock-move-list #pkgs_info {
+  font-size: 1rem;
+}
+
+stock-move-list #lines div .row {
+  border: solid 1px grey;
+}
+
+stock-move-list #lines div .row .product-col, stock-move-list #lines div .row .product-col .row {
+  border: solid 0px grey;
+}
+
+stock-move-list #lines div .row .product-col .row {
+  float: right;
+}
+
+stock-move-list .row-button {
+  font-size: 1rem;
+}
+
+stock-move-list .button-color-first {
+  color: #7C7BAD;
 }

@@ -66,22 +66,22 @@
           <ion-scroll scrollY=true>
             <ion-row class="row header filter" *ngIf="current_selected_partner && selected_partner_name">
               <ion-col col-3>
-                <button color="default" tooltip="Movimientos" positionV="top" arrow [ngClass]="{'red-icon': current_list_shown == 'move_list'}" (click)="show_partner_move_lines()" outline icon-only>
+                <button color="default" class="button-color-first" tooltip="Movimientos" positionV="top" arrow [ngClass]="{'red-icon': current_list_shown == 'move_list'}" (click)="show_partner_move_lines()" outline icon-only>
                   <ion-icon name='paper' is-active="true"></ion-icon>
                 </button>
               </ion-col>
               <ion-col col-3>
-                <button color="default" tooltip="Paquetes Entrantes" positionV="top" arrow [ngClass]="{'red-icon': current_list_shown == 'package_list'}" (click)="show_partner_packages_arrivals()" outline icon-only>
+                <button color="default" class="button-color-first" tooltip="Paquetes Entrantes" positionV="top" arrow [ngClass]="{'red-icon': current_list_shown == 'package_list'}" (click)="show_partner_packages_arrivals()" outline icon-only>
                   <ion-icon name='cube' is-active="true"></ion-icon>
                 </button>
               </ion-col>
               <ion-col col-3>
-                <button color="default" tooltip="Movimientos sin asignar" positionV="top" arrow *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_unassigned'}" (click)="moves_filter_by_assigned_pkgs(0)" outline icon-only>
+                <button color="default" class="button-color-first" tooltip="Movimientos sin asignar" positionV="top" arrow *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_unassigned'}" (click)="moves_filter_by_assigned_pkgs(0)" outline icon-only>
                   <ion-icon name='log-in' is-active="true"></ion-icon>
                 </button>
               </ion-col>
               <ion-col col-3>
-                <button color="default" tooltip="Movimientos asignados" positionV="top" arrow *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_assigned'}" (click)="moves_filter_by_assigned_pkgs(1)" outline icon-only>
+                <button color="default" class="button-color-first" tooltip="Movimientos asignados" positionV="top" arrow *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'" [ngClass]="{'red-icon': current_list_shown == 'filtered_assigned'}" (click)="moves_filter_by_assigned_pkgs(1)" outline icon-only>
                   <ion-icon name='log-out' is-active="true"></ion-icon>
                 </button>
               </ion-col>
@@ -106,14 +106,14 @@
                       <ion-col col-3 class="col product-col shipping-color">{{move['package_id'][1] || 'N'}}</ion-col>
                       <ion-col col-3 class="col product-col shipping-color">{{move['result_package_id'][1] || 'N'}}</ion-col>
                       <ion-col col-3 class="col product-col options shipping-color">
-                        <!-- <div *ngIf="!move['result_package_id']">
-                          <button *ngIf="!current_selected_pkg" color="default" (click)="create_new_package(move['id'])" outline icon-only>
+                        <ion-row *ngIf="!move['result_package_id']">
+                          <!-- <button *ngIf="!current_selected_pkg" color="default" (click)="create_new_package(move['id'])" outline icon-only>
+                            <ion-icon name='add-circle' is-active="true"></ion-icon>
+                          </button> -->
+                          <button *ngIf="current_selected_pkg" tooltip="Añadir al paquete" positionV="top" class="row-button" color="default" (click)="add_product_to_package(move['id'])" outline icon-only>
                             <ion-icon name='add-circle' is-active="true"></ion-icon>
                           </button>
-                          <button *ngIf="current_selected_pkg" color="default" (click)="add_product_to_package(move['id'])" outline icon-only>
-                            <ion-icon name='add-circle' is-active="true"></ion-icon>
-                          </button>
-                        </div> -->
+                        </ion-row>
                         <ion-row *ngIf="move['result_package_id']">
                           <button tooltip="Ver" positionV="top" class="row-button" arrow (click)= "open_package(move['result_package_id'][0])" [ngClass]="{'red-icon': move['result_package_id'][0] == current_selected_pkg}" color="default" outline icon-only>
                             <ion-icon name='eye' is-active="true"></ion-icon>
@@ -165,7 +165,7 @@
                 </ion-row>
                 <ion-row class="row" dragula="move_lines_container" id="pkgs" [dragulaModel]="current_partner_pkg_list">
                   <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg[0]}}" [ngClass]="{'red-background': pkg[0] == current_selected_pkg, 'hidden-col': ((!pkg[2] && pkg[3] != current_shipping_type) || (pkg[2] && pkg[2] != current_shipping_type)) && current_shipping_type != 'all', 'pasaran-type': pkg[2] == 'pasaran', 'route-type': pkg[2] == 'route', 'agency-type': pkg[2] == 'agency'}" (click)="open_package(pkg[0])" (press)="show_shipping_options(pkg[0])">
-                    <ion-row>{{pkg[1]}}</ion-row>
+                    {{pkg[1]}}
                   </ion-col>
                 </ion-row>
               </div>
@@ -203,11 +203,11 @@
                 </ion-row> -->
                 <div dragula="move_lines_container" id="pkgs_info" [dragulaModel]="current_pkg_info">
                   <ion-row class="row" id="{{pkg_line[0]}}" *ngFor="let pkg_line of current_pkg_info">
-                    <ion-col col-6 class="col product-col">
+                    <ion-col col-10 class="col product-col">
                       <ion-row>{{pkg_line[1]}}</ion-row>
                     </ion-col>
-                    <ion-col col-6 class="col product-col">
-                      <ion-row>{{pkg_line[2]}}</ion-row>
+                    <ion-col col-2 class="col product-col">
+                      <ion-row>{{pkg_line[2]}} Ud(s)</ion-row>
                     </ion-col>
                   </ion-row>
                 </div>
