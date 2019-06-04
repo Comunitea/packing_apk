@@ -165,27 +165,6 @@ export class StockProvider {
     return promise
   }
 
-  get_partner_empty_packages(partner_id) {
-    let self = this
-    let model 
-    let values = {
-      'dest_partner_id': partner_id
-    }
-     
-    model = 'stock.quant.package'
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.execute(model, 'get_partner_empty_packages', values).then((done) => {
-       resolve(done)
-      })
-      .catch((err) => {
-        reject(false)
-        console.log("Error al validar")
-    });
-    })
-    
-    return promise
-  }
-
   delete_package(package_id) {
     let self = this
     let model 
@@ -353,7 +332,7 @@ export class StockProvider {
       'location_dest_id': location_dest_id
     }
      
-    model = 'stock.move'
+    model = 'stock.move.line'
     let promise = new Promise( (resolve, reject) => {
       self.odooCon.execute(model, 'get_users_list_for_apk', values).then((done) => {
        resolve(done)

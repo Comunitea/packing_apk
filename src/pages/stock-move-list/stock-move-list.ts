@@ -54,12 +54,14 @@ export class StockMoveListPage {
   selected_line_default_shipping: any
   selected_line_selected_shipping: any
   current_pkg_data: any
+  multipleSelectionMain: boolean
   subs = new Subscription();
 
   constructor(public alertCtrl: AlertController, public actionSheetCtrl: ActionSheetController, public dragulaService: DragulaService,
      public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private storage: Storage,
       private stockInfo: StockProvider, private changeDetectorRef: ChangeDetectorRef) {
         this.move_state_filter = 0
+        this.multipleSelectionMain = false;
         this.passed_selected_partner = this.navParams.data.current_selected_partner
         this.passed_selected_pkg = this.navParams.data.current_selected_pkg
         this.passed_shipping_type = this.navParams.data.current_shipping_type
@@ -217,9 +219,9 @@ export class StockMoveListPage {
   }
 
   get_user_name(partner_id) {
-    let selected_partner = this.users_list.filter(x => x[0] == partner_id)
-    this.selected_partner_name = selected_partner[0][1]
-    this.selected_partner_default_shipping_type = selected_partner[0][2] || 'pasaran'
+    let selected_partner = this.users_list.filter(x => x['id'] == partner_id)
+    this.selected_partner_name = selected_partner[0]['name']
+    this.selected_partner_default_shipping_type = selected_partner[0]['shipping_type'] || 'pasaran'
     this.changeDetectorRef.detectChanges()
   }
 
@@ -230,6 +232,7 @@ export class StockMoveListPage {
     this.show_shipping_type('all')
 
     this.stockInfo.get_stock_move_lines_list_apk(partner_id, this.default_warehouse).then((lines:Array<{}>) => {
+      this.multipleSelectionMain = false;
       this.full_stock_moves = []
       this.filtered_arrival_pkg_list = []
       this.current_partner_pkg_list = []
@@ -244,7 +247,6 @@ export class StockMoveListPage {
       this.current_partner_pkg_list = lines['result_package_ids']
       this.full_stock_moves = lines['move_lines']
       this.current_partner_arrival_pkgs_list = lines['arrival_package_ids']
-      this.get_partner_empty_packages(partner_id)
     }).catch((mierror) => {
       this.full_stock_moves = []
       //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror + mierror)
@@ -611,23 +613,37 @@ export class StockMoveListPage {
     })
   }
 
-  get_partner_empty_packages(partner_id) {
-    this.stockInfo.get_partner_empty_packages(partner_id).then((resultado:Array<{}>) => {
-      resultado.forEach(linea => {
-        this.current_partner_pkg_list.push(linea)
-        this.changeDetectorRef.detectChanges()
-      });
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, false, this.current_shipping_type)
-      console.log(mierror)
-    })
-  }
-
   // Reload
 
   reload_with_data(current_selected_partner, current_selected_pkg=false, current_shipping_type=false){
     let val = {'current_selected_partner': current_selected_partner, 'current_selected_pkg': current_selected_pkg, 'current_shipping_type': current_shipping_type}
     this.navCtrl.setRoot(StockMoveListPage, val)    
+  }
+
+  // Checkboxes selection
+
+  multipleSelection(event) {
+    let checkeableItems = this.full_stock_moves.filter(x => x['isChecked'] == !event.checked && x['result_package_id'] == false)
+    checkeableItems.forEach(item => {
+      item.isChecked = event.checked;
+    });
+    this.changeDetectorRef.detectChanges()
+  }
+
+  simpleSelection(event, id) {
+    let item = this.full_stock_moves.filter(x => x['id'] == id)
+    item.isChecked = event.checked;
+    this.changeDetectorRef.detectChanges()
+  }
+
+  add_multiple_lines_to_package() {
+    let selectedItems = this.full_stock_moves.filter(x => x['isChecked'] == true);
+    selectedItems.forEach(item => {
+      this.add_product_to_package(item.id, false);
+    });
+
+    this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type);
+    this.changeDetectorRef.detectChanges();
+    
   }
 }

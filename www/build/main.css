@@ -25765,7 +25765,7 @@ stock-move-list {
 }
 
 stock-move-list .header .col {
-  background-color: lightgrey;
+  background-color: #c3e2f1;
 }
 
 stock-move-list .col {
@@ -25819,7 +25819,7 @@ stock-move-list .fat-col.red-background {
 }
 
 stock-move-list .red-icon {
-  color: black !important;
+  color: #3e00a1 !important;
 }
 
 stock-move-list ion-scroll {
@@ -25921,7 +25921,7 @@ stock-move-list #lines div .row .product-col, stock-move-list #lines div .row .p
   border: solid 0px grey;
 }
 
-stock-move-list #lines div .row .product-col .row {
+stock-move-list #lines div .row .product-col .row, stock-move-list .right-button {
   float: right;
 }
 

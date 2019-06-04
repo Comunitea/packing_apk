@@ -9,9 +9,8 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title *ngIf="current_selected_partner && selected_partner_name">Movimientos de stock: {{ selected_partner_name }}
+    <ion-title *ngIf="current_selected_partner && selected_partner_name; else not_selected_partner_name">Movimientos de stock: {{ selected_partner_name }}
     </ion-title>
-    <ion-title *ngIf="!current_selected_partner || !selected_partner_name">Movimientos de stock</ion-title>
 
     <ion-buttons end>
 
@@ -53,8 +52,8 @@
                 </ion-col>
               </ion-row>
               <ion-row class="row" *ngFor="let user of users_list">
-                <ion-col col-12 class="col fat-col" [ngClass]="{'red-background': user[0] == current_selected_partner}" (click)= "get_partner_move_lines_apk(user[0])">
-                    {{ user[1] }}
+                <ion-col col-12 class="col fat-col" [ngClass]="{'red-background': user['id'] == current_selected_partner}" (click)= "get_partner_move_lines_apk(user['id'])">
+                    {{ user['name'] }}
                 </ion-col>
               </ion-row>
             </ion-scroll>
@@ -86,42 +85,38 @@
                 </button>
               </ion-col>
             </ion-row>
-            <div *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'">
+            <div if=lines_header *ngIf="current_list_shown == 'move_list'  || current_list_shown == 'filtered_assigned'  || current_list_shown == 'filtered_unassigned'">
               <ion-row class="row header">
-                <ion-col col-3 class="col">Pedido</ion-col>
+                <ion-col col-1 class="col">
+                  <ion-checkbox (ionChange)="multipleSelection($event)" [(ngModel)]="multipleSelectionMain"></ion-checkbox>
+                </ion-col>
+                <ion-col col-2 class="col">Pedido</ion-col>
                 <ion-col col-3 class="col">P.Entrada</ion-col>
                 <ion-col col-3 class="col">P.Salida</ion-col>
-                <ion-col col-3 class="col">Opc.</ion-col>
+                <ion-col col-3 class="col">
+                  Opc. 
+                  <button *ngIf="current_selected_pkg" tooltip="Añadir todo al paquete" positionV="top" class="row-button right-button" color="default" (click)="add_multiple_lines_to_package()" outline icon-only>
+                    <ion-icon name='add-circle' is-active="true"></ion-icon>
+                  </button>
+                </ion-col>
               </ion-row>
               <div dragula="move_lines_container" id="lines" [dragulaModel]="users_list">
-                <div *ngFor="let move of full_stock_moves" id="{{move['id']}}" (press)="show_shipping_options_line(move['id'])">
+                <div *ngFor="let move of full_stock_moves" id="move['id']" (press)="show_shipping_options_line(move['id'])">
                     <ion-row class="row" 
                     
                     *ngIf="((move['shipping_type'] && move['shipping_type'] == current_shipping_type) || current_shipping_type == 'all') && ((current_list_shown == 'filtered_unassigned' && !move['result_package_id']) || (current_list_shown == 'filtered_assigned' && move['result_package_id']) || (current_list_shown == 'move_list'))">
                       <ion-col col-12 
                       [ngClass]="{'pasaran-type': move['shipping_type'] && move['shipping_type'] == 'pasaran', 'route-type': move['shipping_type'] && move['shipping_type'] == 'route', 'agency-type': move['shipping_type'] && move['shipping_type'] == 'agency'}" 
                       class="col product-col"><strong>{{move['name']}}</strong><strong class="product-units">{{move['product_qty']}} Ud(s).</strong></ion-col>
-                      
-                      <ion-col col-3 class="col product-col shipping-color">{{move['origin']}}</ion-col>
-                      <ion-col col-3 class="col product-col shipping-color">{{move['package_id'][1] || 'N'}}</ion-col>
-                      <ion-col col-3 class="col product-col shipping-color">{{move['result_package_id'][1] || 'N'}}</ion-col>
+
+                      <ion-col col-1 class="col product-col shipping-color">
+                        <ion-checkbox (ionChange)="simpleSelection($event, move['id'])" [(ngModel)]="move['isChecked']" *ngIf="!move['result_package_id'] || !move['result_package_id']['name']; else not_result_package_id"></ion-checkbox>
+                      </ion-col>
+                      <ion-col col-2 class="col product-col shipping-color">{{move['origin']}}</ion-col>
+                      <ion-col col-3 class="col product-col shipping-color">{{move['package_id']['id'] || 'N'}}</ion-col>
+                      <ion-col *ngIf="move['result_package_id'] && move['result_package_id']['name']; else not_result_package_id_open" col-3 class="col product-col shipping-color" (click)="open_package(move['result_package_id']['id'])">{{move['result_package_id']['name']}}</ion-col>
                       <ion-col col-3 class="col product-col options shipping-color">
-                        <ion-row *ngIf="!move['result_package_id']">
-                          <!-- <button *ngIf="!current_selected_pkg" color="default" (click)="create_new_package(move['id'])" outline icon-only>
-                            <ion-icon name='add-circle' is-active="true"></ion-icon>
-                          </button> -->
-                          <button *ngIf="current_selected_pkg" tooltip="Añadir al paquete" positionV="top" class="row-button" color="default" (click)="add_product_to_package(move['id'])" outline icon-only>
-                            <ion-icon name='add-circle' is-active="true"></ion-icon>
-                          </button>
-                        </ion-row>
-                        <ion-row *ngIf="move['result_package_id']">
-                          <button tooltip="Ver" positionV="top" class="row-button" arrow (click)= "open_package(move['result_package_id'][0])" [ngClass]="{'red-icon': move['result_package_id'][0] == current_selected_pkg}" color="default" outline icon-only>
-                            <ion-icon name='eye' is-active="true"></ion-icon>
-                          </button>
-                          <button tooltip="Desempaquetar" class="row-button" positionV="top" arrow (click)= "remove_product_from_pkg(move['id'])" color="default" outline icon-only>
-                            <ion-icon name="remove-circle"></ion-icon>
-                          </button>
-                        </ion-row>
+                        <ng-container [ngTemplateOutlet]="move['result_package_id'] ?result_package_id_buttons : not_result_package_id_buttons" [ngTemplateOutletContext]="{move:move}"></ng-container>
                       </ion-col>
                       
                     </ion-row>
@@ -134,9 +129,9 @@
                 <ion-col col-6 class="col">Nombre</ion-col>
               </ion-row>
               <div dragula="move_lines_container" id="arrival_pkgs" [dragulaModel]="current_partner_arrival_pkgs_list">
-                <ion-row class="row" *ngFor="let arrival_pkg of current_partner_arrival_pkgs_list" id="{{arrival_pkg[0]}}">
-                  <ion-col col-6 class="col product-col">{{arrival_pkg[0]}}</ion-col>
-                  <ion-col col-6 class="col product-col">{{arrival_pkg[1]}}</ion-col>
+                <ion-row class="row" *ngFor="let arrival_pkg of current_partner_arrival_pkgs_list" id="{{arrival_pkg['id']}}">
+                  <ion-col col-6 class="col product-col">{{arrival_pkg['id']}}</ion-col>
+                  <ion-col col-6 class="col product-col">{{arrival_pkg['name']}}</ion-col>
                 </ion-row>
               </div>
             </div>
@@ -164,8 +159,8 @@
                   </ion-col>
                 </ion-row>
                 <ion-row class="row" dragula="move_lines_container" id="pkgs" [dragulaModel]="current_partner_pkg_list">
-                  <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg[0]}}" [ngClass]="{'red-background': pkg[0] == current_selected_pkg, 'hidden-col': ((!pkg[2] && pkg[3] != current_shipping_type) || (pkg[2] && pkg[2] != current_shipping_type)) && current_shipping_type != 'all', 'pasaran-type': pkg[2] == 'pasaran', 'route-type': pkg[2] == 'route', 'agency-type': pkg[2] == 'agency'}" (click)="open_package(pkg[0])" (press)="show_shipping_options(pkg[0])">
-                    {{pkg[1]}}
+                  <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg['id']}}" [ngClass]="{'red-background': pkg['id'] == current_selected_pkg, 'hidden-col': (!pkg['shipping_type'] || (pkg['shipping_type'] && pkg['shipping_type'] != current_shipping_type)) && current_shipping_type != 'all', 'pasaran-type': pkg['shipping_type'] == 'pasaran', 'route-type': pkg['shipping_type'] == 'route', 'agency-type': pkg['shipping_type'] == 'agency'}" (click)="open_package(pkg['id'])" (press)="show_shipping_options(pkg['id'])">
+                    {{pkg['name']}}
                   </ion-col>
                 </ion-row>
               </div>
@@ -202,12 +197,12 @@
                   </ion-col>
                 </ion-row> -->
                 <div dragula="move_lines_container" id="pkgs_info" [dragulaModel]="current_pkg_info">
-                  <ion-row class="row" id="{{pkg_line[0]}}" *ngFor="let pkg_line of current_pkg_info">
+                  <ion-row class="row" id="{{pkg_line['id']}}" *ngFor="let pkg_line of current_pkg_info">
                     <ion-col col-10 class="col product-col">
-                      <ion-row>{{pkg_line[1]}}</ion-row>
+                      <ion-row>{{pkg_line['name']}}</ion-row>
                     </ion-col>
                     <ion-col col-2 class="col product-col">
-                      <ion-row>{{pkg_line[2]}} Ud(s)</ion-row>
+                      <ion-row>{{pkg_line['ordered_qty']}} Ud(s)</ion-row>
                     </ion-col>
                   </ion-row>
                 </div>
@@ -219,3 +214,39 @@
     </ion-row>
   </ion-grid>
 </ion-content>
+
+<!-- Else(s) -->
+
+<ng-template #not_selected_partner_name>
+  <ion-title>Movimientos de stock</ion-title>
+</ng-template>
+
+<ng-template #not_result_package_id>
+  <ion-checkbox disabled="true"></ion-checkbox>
+</ng-template>
+
+<ng-template #not_result_package_id_open>
+  <ion-col col-3 class="col product-col shipping-color">N</ion-col>
+</ng-template>
+
+<ng-template #result_package_id_buttons let-move='move'>
+  <ion-row>
+    <button tooltip="Ver" positionV="top" class="row-button" arrow (click)="open_package(move['result_package_id']['id'])" [ngClass]="{'red-icon': move['result_package_id']['id'] == current_selected_pkg}" color="default" outline icon-only>
+      <ion-icon name='eye' is-active="true"></ion-icon>
+    </button>
+    <button tooltip="Desempaquetar" class="row-button" positionV="top" arrow (click)="remove_product_from_pkg(move['id'])" color="default" outline icon-only>
+      <ion-icon name="remove-circle"></ion-icon>
+    </button>
+  </ion-row>
+</ng-template>
+
+<ng-template #not_result_package_id_buttons let-move='move'>
+  <ion-row *ngIf="!move['result_package_id']">
+    <!-- <button *ngIf="!current_selected_pkg" color="default" (click)="create_new_package(move['id'])" outline icon-only>
+      <ion-icon name='add-circle' is-active="true"></ion-icon>
+    </button> -->
+    <button *ngIf="current_selected_pkg" tooltip="Añadir al paquete" positionV="top" class="row-button" color="default" (click)="add_product_to_package(move['id'])" outline icon-only>
+      <ion-icon name='add-circle' is-active="true"></ion-icon>
+    </button>
+  </ion-row>
+</ng-template>
