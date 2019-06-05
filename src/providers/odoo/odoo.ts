@@ -71,6 +71,7 @@ export class OdooProvider {
     }
 
     execute(model, method, values) {
+        console.log(values)
         let self = this
         let promise = new Promise( (resolve, reject) => {
             self.storage.get('CONEXION').then((con_data) => {
@@ -86,6 +87,7 @@ export class OdooProvider {
                                 resolve(res);
                             })
                             .catch( (error) => {
+                                console.log(error)
                                 let err = {'title': 'Error!', 'msg': 'Fallo al llamar al método ' + method + ' del modelo app.regustry'}
                                 reject(err);
                             });

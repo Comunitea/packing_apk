@@ -102,9 +102,9 @@ export class StockMoveListPage {
         this.subs.add(this.dragulaService.dropModel()
           .subscribe(({ el, target, source }) => {
             if (target.id == "pkgs" && source.id == "lines") {
-              this.create_new_package(parseInt(el.id))
+              this.update_packages(parseInt(el.id), false, "new")
             } else if (target.id == "pkgs_info" && source.id == "lines") {
-              this.add_product_to_package(parseInt(el.id))
+              this.update_packages(parseInt(el.id))
             } else if (target.id == "pkgs_info" && source.id == "arrival_pkgs") {
               this.add_package_content_to_package(parseInt(el.id))
             } 
@@ -113,10 +113,8 @@ export class StockMoveListPage {
 
         this.subs.add(this.dragulaService.removeModel()
           .subscribe(({ el, source }) => {
-            /* if (source.id == "pkgs") {
-              this.showDestroyConfirmation(parseInt(el.id))
-            } else */ if (source.id == "pkgs_info") {
-              this.remove_product_from_pkg(parseInt(el.id))
+            if (source.id == "pkgs_info") {
+              this.update_packages(parseInt(el.id), false, "unlink")
             } else if (source.id == "lines" || source.id == "arrival_pkgs") {
               this.reload_with_data(this.current_selected_partner, this.current_selected_pkg);
             }
@@ -285,18 +283,6 @@ export class StockMoveListPage {
     this.changeDetectorRef.detectChanges()
   }
 
-  create_new_package(move_id) {
-    this.stockInfo.create_new_package_from_move(move_id, this.current_selected_partner).then((linea:Array<{}>) => {
-      console.log(linea)
-      this.current_selected_pkg = linea
-      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner)
-      console.log(mierror)
-    })
-  }
-
   create_new_package_for_partner(shipping_type=this.current_shipping_type) {
       this.stockInfo.create_new_package('stock.quant.package', this.current_selected_partner, shipping_type).then((linea:Array<{}>) => {
         this.current_selected_pkg = linea
@@ -308,18 +294,19 @@ export class StockMoveListPage {
     })
   }
 
-  add_product_to_package(move_id, reload=true) {
-    this.stockInfo.add_package_id_to_line(move_id, this.current_selected_pkg, false).then((resultado:Array<{}>) => {
-      if (reload == true) {
-        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
+  update_packages(move_ids, package_id=this.current_selected_pkg, action:any=false){
+
+    this.stockInfo.update_packages(move_ids, package_id, action).then((resultado:Array<{}>) => {
+      if (resultado[0]) {
+        this.current_selected_pkg = resultado[0] || false;
       }
+
+      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
     }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      if (reload == true) {
-        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
-      }
+      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
       console.log(mierror)
     })
+
   }
 
   add_package_content_to_package(package_id) {   
@@ -329,9 +316,17 @@ export class StockMoveListPage {
     if(package_id) {
       arrival_package_moves = arrival_package_moves.filter(x => x['package_id'][0] == package_id)
     }
-    arrival_package_moves.forEach(package_move => {
-      this.add_product_to_package(package_move['id'], false)
-    });
+
+    arrival_package_moves = arrival_package_moves.filter(x=>x['id'])
+
+    this.stockInfo.update_packages(arrival_package_moves, package_id, false).then((linea:Array<{}>) => {
+      this.current_selected_pkg = linea
+      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
+    }).catch((mierror) => {
+      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+      this.reload_with_data(this.current_selected_partner)
+      console.log(mierror)
+    })
 
     this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
 
@@ -419,6 +414,8 @@ export class StockMoveListPage {
   }
 
   create_shipping_type_button(package_id, text, role, type) {
+    
+    let color = role + '-type'
 
     let shipping_type_button = {
       'text': text,
@@ -430,7 +427,7 @@ export class StockMoveListPage {
         }
         this.set_shipping_type(package_id, valores, role, type)
       },
-      'cssClass': 'actionSheetButton'
+      'cssClass': 'actionSheetButton '+ color
     }
 
     if (this.selected_pkg_selected_shipping == role || this.selected_line_selected_shipping == role) {
@@ -537,7 +534,7 @@ export class StockMoveListPage {
   // Delivery carriers
 
   show_delivery_carriers(package_id) {
-    let domain = [['active', '=', true], ['company_id', '=', this.default_warehouse]]
+    let domain = [['active', '=', true]]
     this.stockInfo.get_delivery_carriers(domain).then((lineas:Array<{}>) => {
       this.presentActionSheet(package_id, lineas)
       this.changeDetectorRef.detectChanges()
@@ -603,16 +600,6 @@ export class StockMoveListPage {
     })
   }  
 
-  remove_product_from_pkg(move_id) {
-    this.stockInfo.add_package_id_to_line(move_id, null).then((resultado:Array<{}>) => {
-      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
-      console.log(mierror)
-    })
-  }
-
   // Reload
 
   reload_with_data(current_selected_partner, current_selected_pkg=false, current_shipping_type=false){
@@ -638,12 +625,39 @@ export class StockMoveListPage {
 
   add_multiple_lines_to_package() {
     let selectedItems = this.full_stock_moves.filter(x => x['isChecked'] == true);
+
+    let move_line_ids = []
     selectedItems.forEach(item => {
-      this.add_product_to_package(item.id, false);
+      move_line_ids.push(item.id)
     });
+
+    let role = "notnew"
+    if (this.current_selected_pkg == false){
+      role = "new"
+    }
+    
+    this.stockInfo.update_packages(move_line_ids, this.current_selected_pkg, role).then((linea:Array<{}>) => {
+      console.log(linea)
+    }).catch((mierror) => {
+      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
+      console.log(mierror)
+    })
 
     this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type);
     this.changeDetectorRef.detectChanges();
     
+  }
+
+  // Urgent
+
+  toggle_urgent_option(type, id, value) {
+    this.stockInfo.toggle_urgent_option(type, id, value).then((resultado:Array<{}>) => {
+      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
+    }).catch((mierror) => {
+      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
+      console.log(mierror)
+    })
   }
 }

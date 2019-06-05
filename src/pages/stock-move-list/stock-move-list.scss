@@ -58,7 +58,7 @@ stock-move-list {
         color: white;
     }
 
-    .red-icon {
+    .active-icon {
         color: rgb(62, 0, 161) !important;
     }
 
@@ -167,5 +167,9 @@ stock-move-list {
 
     .button-color-first {
         color: #7C7BAD;
+    }
+
+    .urgent-type {
+        color: red;
     }
 }

@@ -58,6 +58,32 @@ export class StockProvider {
 
   // New package
 
+  update_packages(move_line_ids, result_package_id, action) {
+    let self = this
+    let model 
+    let values = {
+      'move_line_ids': move_line_ids,
+      'result_package_id': result_package_id,
+      'action': action
+    }
+    console.log(values)
+     
+    model = 'stock.quant.package'
+    let promise = new Promise( (resolve, reject) => {
+      self.odooCon.execute(model, 'update_to_new_package_from_apk', values).then((done) => {
+        console.log(done)
+       resolve(done)
+      })
+      .catch((err) => {
+        console.log(err)
+        reject(false)
+        console.log("Error al validar")
+    });
+    })
+    
+    return promise
+  }
+
   create_new_package(model, partner_id, shipping_type){
     let self = this
     let pckg_model = model
@@ -396,6 +422,28 @@ export class StockProvider {
     model = 'delivery.route.path'
     let promise = new Promise( (resolve, reject) => {
       self.odooCon.execute(model, 'get_routes_for_apk', values).then((done) => {
+       resolve(done)
+      })
+      .catch((err) => {
+        reject(false)
+        console.log("Error al validar")
+    });
+    })
+    
+    return promise
+  }
+
+  // Urgent
+
+  toggle_urgent_option(model, id, value) {
+    let self = this
+    let values = {
+      'id': id,
+      'urgent': value
+    }
+
+    let promise = new Promise( (resolve, reject) => {
+      self.odooCon.execute(model, 'toggle_urgent_option', values).then((done) => {
        resolve(done)
       })
       .catch((err) => {

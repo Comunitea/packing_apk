@@ -15,7 +15,7 @@
 // for the .md, .ios, or .wp mode classes. The mode class is
 // automatically applied to the <body> element in the app.
 
-.actionSheetButton {
+/* .actionSheetButton {
     max-width: 33%;
     min-height: 30%;
 }
@@ -25,22 +25,25 @@
     text-align: center;
     background-image: linear-gradient(lightgrey, lightgrey, grey);
     border: outset 3px black;
-}
+}*/
 
 .actionSheetButton.selected {
     color: red;
 }
 
-.actionSheetButton.default {
-    color: blue;
-}
-
-.actionSheetButton.default.selected {
-    color: purple;
-}
-
 .actionSheetButton span:hover {
-    border: inset 3px black;
+    color: #7C7BAD;
+}
+
+.actionSheetButton.pasaran-type {
+    background-color: rgb(250, 250, 235);
+}
+.actionSheetButton.route-type {
+    background-color: rgb(250, 239, 239);
+}
+
+.actionSheetButton.agency-type {
+    background-color: rgb(206, 240, 239);
 }
 
 .actionSheetContainer div.action-sheet-wrapper {
