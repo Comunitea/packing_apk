@@ -297,7 +297,7 @@ export class StockMoveListPage {
     console.log(partner_id)
 
     this.stockInfo.update_packages(move_ids, package_id, action, partner_id).then((resultado:Array<{}>) => {
-      if (resultado[0]) {
+      if (resultado) {
         this.current_selected_pkg = resultado[0] || false;
       }
 

@@ -116,8 +116,9 @@
                         <ion-checkbox (ionChange)="simpleSelection($event, move['id'])" [(ngModel)]="move['isChecked']"></ion-checkbox>
                       </ion-col>
                       <ion-col col-2 class="col product-col shipping-color">{{move['origin']}}</ion-col>
-                      <ion-col col-3 class="col product-col shipping-color">{{move['package_id']['id'] || 'N'}}</ion-col>
-                      <ion-col *ngIf="move['result_package_id'] && move['result_package_id']['name']; else not_result_package_id_open" col-3 class="col product-col shipping-color" (click)="open_package(move['result_package_id']['id'])">{{move['result_package_id']['name']}}</ion-col>
+                      <ion-col col-3 class="col product-col shipping-color">{{move['package_id'] && move['package_id']['name'] || 'N'}}</ion-col>
+                      <ion-col *ngIf="move['result_package_id'] && move['result_package_id']['name']; else not_result_package_id_open" 
+                      col-3 class="col product-col shipping-color" (click)="open_package(move['result_package_id']['id'])">{{move['result_package_id']['name']}}</ion-col>
                       <ion-col col-3 class="col product-col options shipping-color">
                         <ng-container [ngTemplateOutlet]="move['result_package_id'] ?result_package_id_buttons : not_result_package_id_buttons" [ngTemplateOutletContext]="{move:move}"></ng-container>
                       </ion-col>
@@ -191,7 +192,7 @@
                 </ion-row>
                 <ion-row class="row header">
                   <ion-col col-12 class="col add">
-                    <span *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg">Envío: {{current_pkg_data['info_str']}}</span>
+                    <span *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg">Envío: {{current_pkg_data['info_route_str']}}</span>
                   </ion-col>
                 </ion-row>
                 <!-- <ion-row class="row header">
