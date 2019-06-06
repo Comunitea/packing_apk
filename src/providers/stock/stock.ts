@@ -58,7 +58,7 @@ export class StockProvider {
 
   // New package
 
-  update_packages(move_line_ids, result_package_id, action) {
+  update_packages(move_line_ids, result_package_id, action, partner_id=false) {
     let self = this
     let model 
     let values = {
@@ -66,6 +66,10 @@ export class StockProvider {
       'result_package_id': result_package_id,
       'action': action
     }
+    if(partner_id){
+      values['partner_id']=partner_id
+    }
+
     console.log(values)
      
     model = 'stock.quant.package'
@@ -242,7 +246,7 @@ export class StockProvider {
       .catch((err) => {
         reject(false)
         console.log("Error al validar")
-    });
+      });
     })
     
     return promise

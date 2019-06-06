@@ -39,7 +39,6 @@ export class StockMoveListPage {
   filtered_pkg_list: any
   filtered_arrival_pkg_list: any
   selected_partner_name: any
-  selected_pkg_default_shipping: any
   selected_pkg_selected_shipping: any
   selected_pkg_delivery_carrier_id: any
   selected_pkg_selected_route_id: any
@@ -51,7 +50,6 @@ export class StockMoveListPage {
   selected_partner_default_shipping_type: any
   full_line_ids: any
   current_shipping_type: any
-  selected_line_default_shipping: any
   selected_line_selected_shipping: any
   current_pkg_data: any
   multipleSelectionMain: boolean
@@ -77,7 +75,6 @@ export class StockMoveListPage {
         this.current_selected_partner = []
         this.selected_pkg_current_shipping_type = false
         this.selected_partner_name = false
-        this.selected_pkg_default_shipping = false
         this.selected_pkg_selected_shipping = false
         this.selected_pkg_delivery_carrier_id = false
         this.selected_pkg_selected_route_id = false
@@ -86,7 +83,6 @@ export class StockMoveListPage {
         this.current_shipping_type = false
         this.current_partner_arrival_pkgs_list = []
         this.filtered_arrival_pkg_list = []
-        this.selected_line_default_shipping = []
         this.selected_line_selected_shipping = []
         this.current_pkg_data = []
         this.move_status[0] = {
@@ -208,7 +204,7 @@ export class StockMoveListPage {
 
     if(val && val.trim() != '') {
       this.users_list = this.users_list.filter((user) => {
-        return (user[1].toLowerCase().indexOf(val.toLowerCase()) > -1);
+        return (user['name'].toLowerCase().indexOf(val.toLowerCase()) > -1);
       })
     }
 
@@ -235,7 +231,6 @@ export class StockMoveListPage {
       this.filtered_arrival_pkg_list = []
       this.current_partner_pkg_list = []
       this.current_partner_arrival_pkgs_list = []
-      this.selected_pkg_default_shipping = false
       this.selected_pkg_selected_shipping = false
       this.selected_pkg_delivery_carrier_id = false
       this.selected_pkg_selected_route_id = false
@@ -283,20 +278,10 @@ export class StockMoveListPage {
     this.changeDetectorRef.detectChanges()
   }
 
-  create_new_package_for_partner(shipping_type=this.current_shipping_type) {
-      this.stockInfo.create_new_package('stock.quant.package', this.current_selected_partner, shipping_type).then((linea:Array<{}>) => {
-        this.current_selected_pkg = linea
-        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, false, this.current_shipping_type)
-      console.log(mierror)
-    })
-  }
+  update_packages(move_ids, package_id=this.current_selected_pkg, action:any=false, partner_id=false){
+    console.log(partner_id)
 
-  update_packages(move_ids, package_id=this.current_selected_pkg, action:any=false){
-
-    this.stockInfo.update_packages(move_ids, package_id, action).then((resultado:Array<{}>) => {
+    this.stockInfo.update_packages(move_ids, package_id, action, partner_id).then((resultado:Array<{}>) => {
       if (resultado[0]) {
         this.current_selected_pkg = resultado[0] || false;
       }
@@ -363,7 +348,6 @@ export class StockMoveListPage {
   // Shipping type
   show_shipping_options(package_id) {
     this.stockInfo.get_package_info(package_id).then((lineas:Array<{}>) => {
-      this.selected_pkg_default_shipping = lineas[0]['partner_default_shipping_type'] || false
       this.selected_pkg_selected_shipping = lineas[0]['shipping_type'] || false
       this.selected_pkg_delivery_carrier_id = lineas[0]['delivery_carrier_id'] || false
       this.selected_pkg_selected_route_id = lineas[0]['selected_route'] || false
@@ -378,8 +362,9 @@ export class StockMoveListPage {
   }
 
   show_shipping_options_line(line_id) {
+    console.log("linea: " + line_id)
     this.stockInfo.get_move_line_info(line_id).then((linea:Array<{}>)=> {
-      this.selected_line_default_shipping = linea[0]['partner_default_shipping_type'] || false
+      console.log(linea)
       this.selected_line_selected_shipping = linea[0]['shipping_type']
 
       if (!linea[0]['result_package_id']) {
@@ -440,154 +425,6 @@ export class StockMoveListPage {
 
   }
 
-  set_shipping_type(package_id, valores, role, type) {
-    if (type=='pkg') {
-      this.stockInfo.set_package_shipping_type(valores).then((resultado:Array<{}>) => {
-        if(role == 'pasaran'){
-          this.reload_with_data(this.current_selected_partner, package_id, role)
-        } else if(role == 'agency') {
-          this.reload_with_data(this.current_selected_partner, package_id, role)
-          //this.show_delivery_carriers(package_id)
-        } else if (role == 'route') {
-          // Descomentar show_route para dejar elegir rutas y comentar el reload_with_data. Falta el valor selected_route en stock.quant.package, preguntar a Kiko  si lo metemos.
-          this.reload_with_data(this.current_selected_partner, package_id, role)
-          //this.show_route_options(package_id)
-        }
-        this.changeDetectorRef.detectChanges()
-      }).catch((mierror) => {
-        //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-        this.reload_with_data(this.current_selected_partner, false, this.current_shipping_type)
-        console.log(mierror)
-      })
-    } else if (type=='line') {
-      this.stockInfo.set_move_line_info(package_id, valores).then((resultado:Array<{}>) => {
-        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, role)
-        this.changeDetectorRef.detectChanges()
-      }).catch((mierror) => {
-        //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, role)
-        console.log(mierror)
-      })
-    }
-    
-  }
-
-  // Routes
-
-  show_route_options(package_id) {
-    this.stockInfo.get_routes_for_apk().then((lineas:Array<{}>) => {
-      this.presentRoutesSheet(package_id, lineas)
-      this.changeDetectorRef.detectChanges()
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, false, this.current_shipping_type)
-      console.log(mierror)
-    })
-  }
-
-  presentRoutesSheet(package_id, routes) {
-    
-    let buttons_list_routes = []
-
-    routes.forEach(route => {
-        let route_button = {
-          'text': route['name'],
-          'role': route['id'],
-          handler: () => {
-            let valores = {
-              'selected_route': route['id']
-            }
-            this.set_shipping_route(package_id, valores)
-          },
-          'cssClass': 'actionSheetButton'
-        }
-        
-        if (this.selected_pkg_selected_route_id && this.selected_pkg_selected_route_id[0] == route['id']) {
-          route_button['cssClass'] += ' selected'
-          route_button['text'] = '[x]' + route_button['text']
-        }
-        buttons_list_routes.push(route_button)
-        this.changeDetectorRef.detectChanges()
-    });
-
-    const actionSheet = this.actionSheetCtrl.create({
-      title: 'Selecciona el método de envío',
-      buttons: buttons_list_routes,
-      'cssClass': 'actionSheetContainer'
-    })
-
-    this.changeDetectorRef.detectChanges()
-    actionSheet.present();
-  }
-
-  set_shipping_route(package_id, valores) {
-    this.stockInfo.set_package_info(package_id, valores).then((resultado:Array<{}>) => {
-      this.reload_with_data(this.current_selected_partner, package_id)
-      this.changeDetectorRef.detectChanges()
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, package_id)
-      console.log(mierror)
-    })
-  }
-
-  // Delivery carriers
-
-  show_delivery_carriers(package_id) {
-    let domain = [['active', '=', true]]
-    this.stockInfo.get_delivery_carriers(domain).then((lineas:Array<{}>) => {
-      this.presentActionSheet(package_id, lineas)
-      this.changeDetectorRef.detectChanges()
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, package_id)
-      console.log(mierror)
-    })
-  }
-
-  presentActionSheet(package_id, delivery_carriers) {
-
-    let buttons_list = []
-
-    delivery_carriers.forEach(carrier => {
-        let carrier_button = {
-          'text': carrier['name'],
-          'role': carrier['id'],
-          handler: () => {
-            let valores = {
-              'delivery_carrier_id': carrier['id']
-            }
-            this.set_delivery_carrier(package_id, valores)
-          },
-          'cssClass': 'actionSheetButton'
-        }
-        if (this.selected_pkg_delivery_carrier_id && this.selected_pkg_delivery_carrier_id[0] == carrier['id']) {
-          carrier_button['cssClass'] += ' selected'
-          carrier_button['text'] = '[x]' + carrier_button['text']
-        }
-        buttons_list.push(carrier_button)
-    });
-
-    const actionSheet = this.actionSheetCtrl.create({
-      title: 'Selecciona el método de envío',
-      buttons: buttons_list,
-      'cssClass': 'actionSheetContainer'
-    });
-    this.changeDetectorRef.detectChanges()
-    actionSheet.present();
-  }
-
-  set_delivery_carrier(package_id, valores) {
-    this.stockInfo.set_package_info(package_id, valores).then((resultado:Array<{}>) => {
-      this.reload_with_data(this.current_selected_partner, package_id)
-      this.changeDetectorRef.detectChanges()
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, package_id)
-      console.log(mierror)
-    })
-  }
-
   // Package
 
   remove_pkg(pkg_id) {
@@ -610,7 +447,7 @@ export class StockMoveListPage {
   // Checkboxes selection
 
   multipleSelection(event) {
-    let checkeableItems = this.full_stock_moves.filter(x => x['isChecked'] == !event.checked && x['result_package_id'] == false)
+    let checkeableItems = this.full_stock_moves.filter(x => x)
     checkeableItems.forEach(item => {
       item.isChecked = event.checked;
     });
@@ -637,7 +474,7 @@ export class StockMoveListPage {
     }
     
     this.stockInfo.update_packages(move_line_ids, this.current_selected_pkg, role).then((linea:Array<{}>) => {
-      console.log(linea)
+
     }).catch((mierror) => {
       //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
       this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
@@ -660,4 +497,129 @@ export class StockMoveListPage {
       console.log(mierror)
     })
   }
+
+
+  // Save shipping_type options
+
+  set_shipping_type(id, values, role, type) {
+    if(role == 'pasaran') {
+      this.update_shipping_type(id, type, values, role);
+    } else if (role == 'agency') {
+      this.show_delivery_carriers(id, type, values, role)
+    } else if (role == 'route') {
+      this.show_route_options(id, type, values, role)
+    }
+  }
+
+  update_shipping_type(id, type, values, role) {
+    if (type=='line') {
+      this.stockInfo.set_move_line_info(id, values).then((resultado:Array<{}>) => {
+        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, role)
+        this.changeDetectorRef.detectChanges()
+      }).catch((mierror) => {
+        //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, role)
+        console.log(mierror)
+      })
+    } else {
+      console.log("valores que envío: " + values)
+      this.stockInfo.set_package_shipping_type(values).then((resultado:Array<{}>) => {
+        console.log("valores que envío: " + values)
+        this.reload_with_data(this.current_selected_partner, id, role)
+      }).catch((mierror) => {
+        //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+        this.reload_with_data(this.current_selected_partner, this.current_selected_pkg)
+        console.log(mierror)
+      })
+    }
+  }
+
+  show_delivery_carriers(id, type, values, role) {
+    let domain = [['active', '=', true]]
+    this.stockInfo.get_delivery_carriers(domain).then((lineas:Array<{}>) => {
+      this.present_delivery_sheet(id, lineas, type, values, role)
+      this.changeDetectorRef.detectChanges()
+    }).catch((mierror) => {
+      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+      this.reload_with_data(this.current_selected_partner, id)
+      console.log(mierror)
+    })
+  }
+
+  present_delivery_sheet(id, list, type, values, role) {
+
+    let buttons_list = []
+
+    list.forEach(carrier => {
+        let carrier_button = {
+          'text': carrier['name'],
+          'role': carrier['id'],
+          handler: () => {
+            values['carrier_id'] = carrier['id']
+            this.update_shipping_type(id, type, values, role)
+          },
+          'cssClass': 'actionSheetButton'
+        }
+        if (this.selected_pkg_delivery_carrier_id && this.selected_pkg_delivery_carrier_id[0] == carrier['id']) {
+          carrier_button['cssClass'] += ' selected'
+          carrier_button['text'] = '[x]' + carrier_button['text']
+        }
+        buttons_list.push(carrier_button)
+    });
+
+    const actionSheet = this.actionSheetCtrl.create({
+      title: 'Selecciona el método de envío',
+      buttons: buttons_list,
+      'cssClass': 'actionSheetContainer'
+    });
+    this.changeDetectorRef.detectChanges()
+    actionSheet.present();
+  }
+
+  show_route_options(id, type, values, role) {
+    this.stockInfo.get_routes_for_apk().then((lineas:Array<{}>) => {
+      this.present_routes_sheet(id, lineas, type, values, role)
+      this.changeDetectorRef.detectChanges()
+    }).catch((mierror) => {
+      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
+      this.reload_with_data(this.current_selected_partner, false, this.current_shipping_type)
+      console.log(mierror)
+    })
+  }
+
+  present_routes_sheet(id, routes, type, values, role) {
+    
+    let buttons_list_routes = []
+
+    routes.forEach(route => {
+        let route_button = {
+          'text': route['name'],
+          'role': route['id'],
+          handler: () => {
+            values['delivery_route_path_id'] = route['id']
+            this.update_shipping_type(id, type, values, role)
+          },
+          'cssClass': 'actionSheetButton'
+        }
+        
+        if (this.selected_pkg_selected_route_id && this.selected_pkg_selected_route_id[0] == route['id']) {
+          route_button['cssClass'] += ' selected'
+          route_button['text'] = '[x]' + route_button['text']
+        }
+        buttons_list_routes.push(route_button)
+        this.changeDetectorRef.detectChanges()
+    });
+
+    const actionSheet = this.actionSheetCtrl.create({
+      title: 'Selecciona el método de envío',
+      buttons: buttons_list_routes,
+      'cssClass': 'actionSheetContainer'
+    })
+
+    this.changeDetectorRef.detectChanges()
+    actionSheet.present();
+  }
+
+
+
 }

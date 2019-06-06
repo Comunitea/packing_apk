@@ -110,7 +110,7 @@
                       class="col product-col"><strong>{{move['name']}}</strong><strong class="product-units">{{move['product_qty']}} Ud(s).</strong></ion-col>
 
                       <ion-col col-1 class="col product-col shipping-color">
-                        <ion-checkbox (ionChange)="simpleSelection($event, move['id'])" [(ngModel)]="move['isChecked']" *ngIf="!move['result_package_id'] || !move['result_package_id']['name']; else not_result_package_id"></ion-checkbox>
+                        <ion-checkbox (ionChange)="simpleSelection($event, move['id'])" [(ngModel)]="move['isChecked']"></ion-checkbox>
                       </ion-col>
                       <ion-col col-2 class="col product-col shipping-color">{{move['origin']}}</ion-col>
                       <ion-col col-3 class="col product-col shipping-color">{{move['package_id']['id'] || 'N'}}</ion-col>
@@ -150,11 +150,11 @@
                   </ion-col>
                   <ion-col col-4 class="col add">
                     <ion-row>
-                      <ion-col class="col add" col-12>
-                        <button tooltip="Nuevo Paquete" positionV="top" arrow *ngIf="(current_selected_partner && selected_partner_name) && current_shipping_type != 'all'" class="black" icon-only (click)="create_new_package_for_partner()">
+                      <!-- <ion-col class="col add" col-12>
+                        <button tooltip="Nuevo Paquete" positionV="top" arrow *ngIf="current_selected_partner && selected_partner_name" class="black" icon-only (click)="update_packages(false, false, 'new_partner_pack', current_selected_partner)">
                           <ion-icon name="add-circle"></ion-icon>
                         </button>
-                      </ion-col>
+                      </ion-col> -->
                     </ion-row>
                   </ion-col>
                 </ion-row>
@@ -225,10 +225,6 @@
 
 <ng-template #not_selected_partner_name>
   <ion-title>Movimientos de stock</ion-title>
-</ng-template>
-
-<ng-template #not_result_package_id>
-  <ion-checkbox disabled="true"></ion-checkbox>
 </ng-template>
 
 <ng-template #not_result_package_id_open>
