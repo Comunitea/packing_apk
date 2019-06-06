@@ -376,6 +376,27 @@ export class StockProvider {
     return promise
   }
 
+  get_users_list_for_apk_from_search_box(name) {
+    let self = this
+    let model 
+    let values = {
+      'name': name
+    }
+     
+    model = 'stock.move.line'
+    let promise = new Promise( (resolve, reject) => {
+      self.odooCon.execute(model, 'get_users_list_for_apk_from_search_box', values).then((done) => {
+       resolve(done)
+      })
+      .catch((err) => {
+        reject(false)
+        console.log("Error al validar")
+    });
+    })
+    
+    return promise
+  }
+
   // Alerts
 
   presentAlert(titulo, texto) {

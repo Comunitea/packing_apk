@@ -48,7 +48,7 @@
               </ion-row>
               <ion-row class="row">
                 <ion-col col-12 class="col">
-                  <ion-searchbar (ionInput)="filter_users_list($event)"></ion-searchbar>
+                  <ion-searchbar (ionInput)="filter_users_list_from_server($event)"></ion-searchbar>
                 </ion-col>
               </ion-row>
               <ion-row class="row" *ngFor="let user of users_list">
@@ -97,6 +97,9 @@
                   Opc. 
                   <button tooltip="Añadir todo al paquete" positionV="top" class="row-button right-button" color="default" (click)="add_multiple_lines_to_package()" outline icon-only>
                     <ion-icon name='add-circle' is-active="true"></ion-icon>
+                  </button>
+                  <button tooltip="Desempaquetar todo" positionV="top" class="row-button right-button" color="default" (click)="add_multiple_lines_to_package('del')" outline icon-only>
+                    <ion-icon name='remove-circle' is-active="true"></ion-icon>
                   </button>
                 </ion-col>
               </ion-row>

@@ -212,6 +212,21 @@ export class StockMoveListPage {
 
   }
 
+  filter_users_list_from_server(ev: any) {
+
+    let val = ev.target.value;
+    
+    this.stockInfo.get_users_list_for_apk_from_search_box(val).then((lines:Array<{}>) => {
+      this.users_list = lines;
+    }).catch((mierror) => {
+      this.full_stock_moves = []
+      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror + mierror)
+      console.log(mierror)
+    })
+
+    this.changeDetectorRef.detectChanges()
+  }
+
   get_user_name(partner_id) {
     let selected_partner = this.users_list.filter(x => x['id'] == partner_id)
     this.selected_partner_name = selected_partner[0]['name']
@@ -460,30 +475,32 @@ export class StockMoveListPage {
     this.changeDetectorRef.detectChanges()
   }
 
-  add_multiple_lines_to_package() {
+  add_multiple_lines_to_package(type='add') {
     let selectedItems = this.full_stock_moves.filter(x => x['isChecked'] == true);
 
     let move_line_ids = []
-    selectedItems.forEach(item => {
-      move_line_ids.push(item.id)
-    });
-
-    let role = "notnew"
-    if (this.current_selected_pkg == false){
-      role = "new"
-    }
+      selectedItems.forEach(item => {
+        move_line_ids.push(item.id)
+      });
     
-    this.stockInfo.update_packages(move_line_ids, this.current_selected_pkg, role).then((linea:Array<{}>) => {
+    let role = "notnew"
 
+    if(type=='add'){
+      if (this.current_selected_pkg == false){
+        role = "new"
+      }
+    } else if(type=='del'){
+      this.current_selected_pkg=false;
+      role='unlink'
+    }
+
+    this.stockInfo.update_packages(move_line_ids, this.current_selected_pkg, role).then((linea:Array<{}>) => {
+      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type);
     }).catch((mierror) => {
       //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
       this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
       console.log(mierror)
-    })
-
-    this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type);
-    this.changeDetectorRef.detectChanges();
-    
+    })    
   }
 
   // Urgent
