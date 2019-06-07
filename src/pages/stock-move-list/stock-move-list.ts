@@ -296,7 +296,7 @@ export class StockMoveListPage {
   update_packages(move_ids, package_id=this.current_selected_pkg, action:any=false, partner_id=false){
     console.log(partner_id)
 
-    this.stockInfo.update_packages(move_ids, package_id, action, partner_id).then((resultado:Array<{}>) => {
+    this.stockInfo.update_object('stock.move.line', action, move_ids, package_id, false, partner_id).then((resultado:Array<{}>) => {
       if (resultado[0]) {
         this.current_selected_pkg = resultado[0] || false;
       }
@@ -316,7 +316,7 @@ export class StockMoveListPage {
       action = 'new';
     }
 
-    this.stockInfo.transfer_package_moves_to_package(package_id, this.current_selected_pkg, action).then((linea:Array<{}>) => {
+    this.stockInfo.update_object('stock.quant.package', action, [], package_id, this.current_selected_pkg, false).then((linea:Array<{}>) => {
       console.log(linea)
       this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
     }).catch((mierror) => {
@@ -480,18 +480,18 @@ export class StockMoveListPage {
         move_line_ids.push(item.id)
       });
     
-    let role = "notnew"
+    let action = "notnew"
 
     if(type=='add'){
       if (this.current_selected_pkg == false){
-        role = "new"
+        action = "new"
       }
     } else if(type=='del'){
       this.current_selected_pkg=false;
-      role='unlink'
+      action='unlink'
     }
-
-    this.stockInfo.update_packages(move_line_ids, this.current_selected_pkg, role).then((linea:Array<{}>) => {
+    
+    this.stockInfo.update_object('stock.move.line', action, move_line_ids, false, this.current_selected_pkg, false).then((linea:Array<{}>) => {
       this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type);
     }).catch((mierror) => {
       //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);

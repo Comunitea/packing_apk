@@ -56,48 +56,20 @@ export class StockProvider {
     console.log('Hello StockProvider Provider');    
   }
 
-  // New package
+  // Package manager
 
-  update_packages(move_line_ids, result_package_id, action, partner_id=false) {
+  update_object(model="stock.move.line", action:any=false, move_line_ids=[], package_id=false, result_package_id=false, partner_id=false) {
     let self = this
-    let model 
     let values = {
       'move_line_ids': move_line_ids,
-      'result_package_id': result_package_id,
-      'action': action
-    }
-    if(partner_id){
-      values['partner_id']=partner_id
-    }
-     
-    model = 'stock.move.line'
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.execute(model, 'update_to_new_package_from_apk', values).then((done) => {
-        console.log(done)
-       resolve(done)
-      })
-      .catch((err) => {
-        console.log(err)
-        reject(false)
-        console.log("Error al validar")
-    });
-    })
-    
-    return promise
-  }
-
-  transfer_package_moves_to_package(package_id, result_package_id, action) {
-    let self = this
-    let model 
-    let values = {
       'package_id': package_id,
       'result_package_id': result_package_id,
-      'action': action
+      'action': action,
+      'partner_id': partner_id
     }
-     
-    model = 'stock.quant.package'
+
     let promise = new Promise( (resolve, reject) => {
-      self.odooCon.execute(model, 'update_to_new_package_from_apk', values).then((done) => {
+      self.odooCon.execute(model, 'update_object_from_apk', values).then((done) => {
         console.log(done)
        resolve(done)
       })
