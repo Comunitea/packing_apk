@@ -135,7 +135,12 @@
               <div dragula="move_lines_container" id="arrival_pkgs" [dragulaModel]="current_partner_arrival_pkgs_list">
                 <ion-row class="row" *ngFor="let arrival_pkg of current_partner_arrival_pkgs_list" id="{{arrival_pkg['id']}}">
                   <ion-col col-6 class="col product-col">{{arrival_pkg['id']}}</ion-col>
-                  <ion-col col-6 class="col product-col">{{arrival_pkg['name']}}</ion-col>
+                  <ion-col col-6 class="col product-col">
+                    {{arrival_pkg['name']}}
+                    <button tooltip="Añadir al paquete" positionV="top" class="row-button right-button" color="default" (click)="add_package_content_to_package(arrival_pkg['id'])" outline icon-only>
+                      <ion-icon name='add-circle' is-active="true"></ion-icon>
+                    </button>
+                  </ion-col>
                 </ion-row>
               </div>
             </div>

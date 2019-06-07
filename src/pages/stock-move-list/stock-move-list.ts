@@ -297,7 +297,7 @@ export class StockMoveListPage {
     console.log(partner_id)
 
     this.stockInfo.update_packages(move_ids, package_id, action, partner_id).then((resultado:Array<{}>) => {
-      if (resultado) {
+      if (resultado[0]) {
         this.current_selected_pkg = resultado[0] || false;
       }
 
@@ -309,18 +309,15 @@ export class StockMoveListPage {
 
   }
 
-  add_package_content_to_package(package_id) {   
+  add_package_content_to_package(package_id) {
+    let action:any =false;
 
-    let arrival_package_moves = this.full_stock_moves
-
-    if(package_id) {
-      arrival_package_moves = arrival_package_moves.filter(x => x['package_id'][0] == package_id)
+    if(this.current_selected_pkg == false){
+      action = 'new';
     }
 
-    arrival_package_moves = arrival_package_moves.filter(x=>x['id'])
-
-    this.stockInfo.update_packages(arrival_package_moves, package_id, false).then((linea:Array<{}>) => {
-      this.current_selected_pkg = linea
+    this.stockInfo.transfer_package_moves_to_package(package_id, this.current_selected_pkg, action).then((linea:Array<{}>) => {
+      console.log(linea)
       this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
     }).catch((mierror) => {
       //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);

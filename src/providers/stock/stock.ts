@@ -69,8 +69,31 @@ export class StockProvider {
     if(partner_id){
       values['partner_id']=partner_id
     }
+     
+    model = 'stock.move.line'
+    let promise = new Promise( (resolve, reject) => {
+      self.odooCon.execute(model, 'update_to_new_package_from_apk', values).then((done) => {
+        console.log(done)
+       resolve(done)
+      })
+      .catch((err) => {
+        console.log(err)
+        reject(false)
+        console.log("Error al validar")
+    });
+    })
+    
+    return promise
+  }
 
-    console.log(values)
+  transfer_package_moves_to_package(package_id, result_package_id, action) {
+    let self = this
+    let model 
+    let values = {
+      'package_id': package_id,
+      'result_package_id': result_package_id,
+      'action': action
+    }
      
     model = 'stock.quant.package'
     let promise = new Promise( (resolve, reject) => {
