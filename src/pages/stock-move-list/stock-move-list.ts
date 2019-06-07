@@ -296,7 +296,7 @@ export class StockMoveListPage {
   update_packages(move_ids, package_id=this.current_selected_pkg, action:any=false, partner_id=false){
     console.log(partner_id)
 
-    this.stockInfo.update_object('stock.move.line', action, move_ids, package_id, false, partner_id).then((resultado:Array<{}>) => {
+    this.stockInfo.update_object('stock.move.line', action, move_ids, false, package_id, partner_id).then((resultado:Array<{}>) => {
       if (resultado[0]) {
         this.current_selected_pkg = resultado[0] || false;
       }

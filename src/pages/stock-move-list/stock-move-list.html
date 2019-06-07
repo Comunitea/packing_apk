@@ -37,7 +37,7 @@
 <ion-content padding>
   <ion-grid>
     <ion-row>
-      <ion-col col-12 col-md-6 col-lg-2 col-xl-2>
+      <ion-col col-12 col-xs-12 col-sm-12 col-md-2 col-lg-2 col-xl-2>
         <ion-row>
           <ion-grid>
             <ion-scroll id="users" scrollY=true>
@@ -60,7 +60,7 @@
           </ion-grid>
         </ion-row>
       </ion-col>
-      <ion-col col-12 col-md-6 col-lg-6 col-xl-6>
+      <ion-col col-12 col-xs-12 col-sm-8 col-md-7 col-lg-6 col-xl-6>
         <ion-grid>
           <ion-scroll scrollY=true>
             <ion-row class="row header filter" *ngIf="current_selected_partner && selected_partner_name">
@@ -148,7 +148,7 @@
         </ion-grid>
       </ion-col>
 
-      <ion-col col-12 col-md-6 col-lg-4 col-xl-4>
+      <ion-col col-12 col-xs-12 col-sm-4 col-md-3 col-lg-4 col-xl-4>
         <ion-row>
           <ion-grid>
             <ion-scroll scrollY=true>
@@ -175,10 +175,10 @@
               </div>
               <div *ngIf="current_selected_pkg != false">
                 <ion-row class="row header-reddish">
-                  <ion-col col-6 class="col pkg">
+                  <ion-col col-6 col-xs-12 col-sm-12 col-md-12 col-lg-6 col-xl-6 class="col pkg">
                     {{current_pkg_data['name']}}
                   </ion-col>
-                  <ion-col col-6 class="col add">
+                  <ion-col col-6 col-xs-12 col-sm-12 col-md-12 col-lg-6 col-xl-6 class="col add">
                     <ion-row>
                       <button tooltip="Volver al listado" positionV="top" class="row-button black" icon-only (click)="reload_with_data(current_selected_partner, false, current_shipping_type)">
                         <ion-icon name="undo"></ion-icon>
@@ -213,11 +213,11 @@
                 </ion-row> -->
                 <div dragula="move_lines_container" id="pkgs_info" [dragulaModel]="current_pkg_info">
                   <ion-row class="row" id="{{pkg_line['id']}}" *ngFor="let pkg_line of current_pkg_info">
-                    <ion-col col-10 class="col product-col">
+                    <ion-col col-10 col-xs-6 col-sm-6 col-md-6 col-lg-10 col-xl-10 class="col product-col">
                       <ion-row>{{pkg_line['name']}}</ion-row>
                     </ion-col>
-                    <ion-col col-2 class="col product-col">
-                      <ion-row>{{pkg_line['ordered_qty']}} Ud(s)</ion-row>
+                    <ion-col col-2 col-xs-6 col-sm-6 col-md-6 col-lg-2 col-xl-2 class="col product-col">
+                      <ion-row>{{pkg_line['product_qty']}} Ud(s)</ion-row>
                     </ion-col>
                   </ion-row>
                 </div>
