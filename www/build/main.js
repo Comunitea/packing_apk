@@ -716,6 +716,7 @@ var StockMoveListPage = /** @class */ (function () {
         this.passed_selected_partner = this.navParams.data.current_selected_partner;
         this.passed_selected_pkg = this.navParams.data.current_selected_pkg;
         this.passed_shipping_type = this.navParams.data.current_shipping_type;
+        this.passed_current_list_shown = this.navParams.data.current_list_shown;
         this.move_status = [];
         this.users_list = [];
         this.full_users_list = [];
@@ -840,6 +841,9 @@ var StockMoveListPage = /** @class */ (function () {
                 if (_this.passed_shipping_type) {
                     _this.current_shipping_type = _this.passed_shipping_type;
                 }
+            }
+            if (_this.passed_current_list_shown) {
+                _this.current_list_shown = _this.passed_current_list_shown;
             }
             _this.changeDetectorRef.detectChanges();
             _this.full_users_list = lines;
@@ -1077,7 +1081,7 @@ var StockMoveListPage = /** @class */ (function () {
     StockMoveListPage.prototype.reload_with_data = function (current_selected_partner, current_selected_pkg, current_shipping_type) {
         if (current_selected_pkg === void 0) { current_selected_pkg = false; }
         if (current_shipping_type === void 0) { current_shipping_type = false; }
-        var val = { 'current_selected_partner': current_selected_partner, 'current_selected_pkg': current_selected_pkg, 'current_shipping_type': current_shipping_type };
+        var val = { 'current_selected_partner': current_selected_partner, 'current_selected_pkg': current_selected_pkg, 'current_shipping_type': current_shipping_type, 'current_list_shown': this.current_list_shown };
         this.navCtrl.setRoot(StockMoveListPage_1, val);
     };
     // Checkboxes selection

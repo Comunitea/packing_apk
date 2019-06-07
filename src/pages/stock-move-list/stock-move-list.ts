@@ -46,6 +46,7 @@ export class StockMoveListPage {
   passed_shipping_type: any
   passed_selected_partner: any
   passed_selected_pkg: any
+  passed_current_list_shown: any
   current_list_shown: any
   selected_partner_default_shipping_type: any
   full_line_ids: any
@@ -63,6 +64,7 @@ export class StockMoveListPage {
         this.passed_selected_partner = this.navParams.data.current_selected_partner
         this.passed_selected_pkg = this.navParams.data.current_selected_pkg
         this.passed_shipping_type = this.navParams.data.current_shipping_type
+        this.passed_current_list_shown = this.navParams.data.current_list_shown
         this.move_status = []
         this.users_list = []
         this.full_users_list = []
@@ -187,8 +189,11 @@ export class StockMoveListPage {
       if(this.passed_selected_partner) {
         this.get_partner_move_lines_apk(this.passed_selected_partner, this.passed_selected_pkg)
         if (this.passed_shipping_type) {
-          this.current_shipping_type = this.passed_shipping_type
+          this.current_shipping_type = this.passed_shipping_type;
         }
+      }
+      if(this.passed_current_list_shown) {
+        this.current_list_shown = this.passed_current_list_shown;
       }
       this.changeDetectorRef.detectChanges()
       this.full_users_list = lines
@@ -452,7 +457,7 @@ export class StockMoveListPage {
   // Reload
 
   reload_with_data(current_selected_partner, current_selected_pkg=false, current_shipping_type=false){
-    let val = {'current_selected_partner': current_selected_partner, 'current_selected_pkg': current_selected_pkg, 'current_shipping_type': current_shipping_type}
+    let val = {'current_selected_partner': current_selected_partner, 'current_selected_pkg': current_selected_pkg, 'current_shipping_type': current_shipping_type, 'current_list_shown': this.current_list_shown}
     this.navCtrl.setRoot(StockMoveListPage, val)    
   }
 
