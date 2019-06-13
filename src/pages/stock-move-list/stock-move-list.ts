@@ -246,6 +246,7 @@ export class StockMoveListPage {
     this.show_shipping_type('all')
 
     this.stockInfo.get_stock_move_lines_list_apk(partner_id, this.default_warehouse).then((lines:Array<{}>) => {
+      console.log(lines)
       this.multipleSelectionMain = false;
       this.full_stock_moves = []
       this.filtered_arrival_pkg_list = []
@@ -349,7 +350,7 @@ export class StockMoveListPage {
       let current_shipping_selection = lineas[0]['shipping_type'] || lineas[0]['partner_default_shipping_type']
       if (current_shipping_selection == 'pasaran') {
         this.selected_pkg_current_shipping_type = "Pasarán"
-      } else if(current_shipping_selection == 'agency' && lineas[0]['delivery_carrier_id']) {
+      } else if(current_shipping_selection == 'urgent' && lineas[0]['delivery_carrier_id']) {
         this.selected_pkg_current_shipping_type = lineas[0]['delivery_carrier_id'][1] || false
       } else if (current_shipping_selection == 'route' && lineas[0]['selected_route']) {
         this.selected_pkg_current_shipping_type = lineas[0]['selected_route'][1] || false
@@ -401,7 +402,7 @@ export class StockMoveListPage {
 
     let shipping_type = this.create_shipping_type_button(package_id, 'Pasarán', 'pasaran', type)
     buttons_list_shipping.push(shipping_type)
-    shipping_type = this.create_shipping_type_button(package_id, 'Agencia', 'agency', type)
+    shipping_type = this.create_shipping_type_button(package_id, 'Urgente', 'urgent', type)
     buttons_list_shipping.push(shipping_type)
     shipping_type = this.create_shipping_type_button(package_id, 'Ruta', 'route', type)
     buttons_list_shipping.push(shipping_type)
@@ -505,34 +506,22 @@ export class StockMoveListPage {
     })    
   }
 
-  // Urgent
-
-  toggle_urgent_option(type, id, value) {
-    this.stockInfo.toggle_urgent_option(type, id, value).then((resultado:Array<{}>) => {
-      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
-    }).catch((mierror) => {
-      //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
-      this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, this.current_shipping_type)
-      console.log(mierror)
-    })
-  }
-
-
   // Save shipping_type options
 
   set_shipping_type(id, values, role, type) {
     if(role == 'pasaran') {
       this.update_shipping_type(id, type, values, role);
-    } else if (role == 'agency') {
-      this.show_delivery_carriers(id, type, values, role)
+    } else if (role == 'urgent') {
+      this.show_delivery_carriers(id, type, values, role);
     } else if (role == 'route') {
-      this.show_route_options(id, type, values, role)
+      this.delivery_or_route_choice_selector(id, type, values, role);
     }
   }
 
   update_shipping_type(id, type, values, role) {
     if (type=='line') {
-      this.stockInfo.set_move_line_info(id, values).then((resultado:Array<{}>) => {
+      values['move_line'] = id
+      this.stockInfo.set_move_line_shipping_type(values).then((resultado:Array<{}>) => {
         this.reload_with_data(this.current_selected_partner, this.current_selected_pkg, role)
         this.changeDetectorRef.detectChanges()
       }).catch((mierror) => {
@@ -551,6 +540,39 @@ export class StockMoveListPage {
         console.log(mierror)
       })
     }
+  }
+
+  delivery_or_route_choice_selector(id, type, values, role) {
+    let buttons_list = []
+
+    let carriers_button = {
+      'text': 'Transportistas',
+      'role': 'carriers',
+      handler: () => {
+        this.show_delivery_carriers(id, type, values, role);
+      },
+      'cssClass': 'actionSheetButton'
+    }
+
+    let routes_button = {
+      'text': 'Rutas',
+      'role': 'routes',
+      handler: () => {
+        this.show_route_options(id, type, values, role);
+      },
+      'cssClass': 'actionSheetButton'
+    }
+
+    buttons_list.push(carriers_button);
+    buttons_list.push(routes_button);
+
+    const actionSheet = this.actionSheetCtrl.create({
+      title: 'Selecciona el método de envío',
+      buttons: buttons_list,
+      'cssClass': 'actionSheetContainer'
+    });
+    this.changeDetectorRef.detectChanges()
+    actionSheet.present();
   }
 
   show_delivery_carriers(id, type, values, role) {

@@ -21,13 +21,13 @@
       <button tooltip="Pasarán" positionV="bottom" ion-button icon-only item-end [ngClass]="{'pasaran-type': current_shipping_type == 'pasaran'}" (click)="show_shipping_type('pasaran', true)" outline icon-only>
         <ion-icon name="hand" is-active="true"></ion-icon>
       </button>
-        
-      <button tooltip="Agencia" positionV="bottom" ion-button icon-only item-end [ngClass]="{'agency-type': current_shipping_type == 'agency'}" (click)="show_shipping_type('agency', true)" outline icon-only>
-        <ion-icon name="subway" is-active="true"></ion-icon>
-      </button>
 
       <button tooltip="Ruta" positionV="bottom" ion-button icon-only item-end [ngClass]="{'route-type': current_shipping_type == 'route'}" (click)="show_shipping_type('route', true)" outline icon-only>
         <ion-icon name="git-branch" is-active="true"></ion-icon>
+      </button>
+
+      <button tooltip="Urgente" positionV="bottom" ion-button icon-only item-end [ngClass]="{'urgent-type': current_shipping_type == 'urgent'}" (click)="show_shipping_type('urgent', true)" outline icon-only>
+        <ion-icon name="subway" is-active="true"></ion-icon>
       </button>
     </ion-buttons>
 
@@ -109,7 +109,7 @@
                     
                     *ngIf="((move['shipping_type'] && move['shipping_type'] == current_shipping_type) || current_shipping_type == 'all') && ((current_list_shown == 'filtered_unassigned' && !move['result_package_id']) || (current_list_shown == 'filtered_assigned' && move['result_package_id']) || (current_list_shown == 'move_list'))">
                       <ion-col col-12 
-                      [ngClass]="{'pasaran-type': move['shipping_type'] && move['shipping_type'] == 'pasaran', 'route-type': move['shipping_type'] && move['shipping_type'] == 'route', 'agency-type': move['shipping_type'] && move['shipping_type'] == 'agency', 'urgent-type': move['urgent']}" 
+                      [ngClass]="{'pasaran-type': move['shipping_type'] && move['shipping_type'] == 'pasaran', 'route-type': move['shipping_type'] && move['shipping_type'] == 'route', 'urgent-type': move['shipping_type'] && move['shipping_type'] == 'urgent'}" 
                       class="col product-col"><strong>{{move['name']}}</strong><strong class="product-units">{{move['product_qty']}} Ud(s).</strong></ion-col>
 
                       <ion-col col-1 class="col product-col shipping-color">
@@ -168,7 +168,7 @@
                   </ion-col>
                 </ion-row>
                 <ion-row class="row" dragula="move_lines_container" id="pkgs" [dragulaModel]="current_partner_pkg_list">
-                  <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg['id']}}" [ngClass]="{'red-background': pkg['id'] == current_selected_pkg, 'hidden-col': (!pkg['shipping_type'] || (pkg['shipping_type'] && pkg['shipping_type'] != current_shipping_type)) && current_shipping_type != 'all', 'pasaran-type': pkg['shipping_type'] == 'pasaran', 'route-type': pkg['shipping_type'] == 'route', 'agency-type': pkg['shipping_type'] == 'agency', 'urgent-type': pkg['urgent']}" (click)="open_package(pkg['id'])" (press)="show_shipping_options(pkg['id'])">
+                  <ion-col col-4 class="col fat-col" *ngFor="let pkg of current_partner_pkg_list" id="{{pkg['id']}}" [ngClass]="{'red-background': pkg['id'] == current_selected_pkg, 'hidden-col': (!pkg['shipping_type'] || (pkg['shipping_type'] && pkg['shipping_type'] != current_shipping_type)) && current_shipping_type != 'all', 'pasaran-type': pkg['shipping_type'] == 'pasaran', 'route-type': pkg['shipping_type'] == 'route', 'urgent-type': pkg['shipping_type'] == 'urgent'}" (click)="open_package(pkg['id'])" (press)="show_shipping_options(pkg['id'])">
                     {{pkg['name']}}
                   </ion-col>
                 </ion-row>
@@ -182,9 +182,6 @@
                     <ion-row>
                       <button tooltip="Volver al listado" positionV="top" class="row-button black" icon-only (click)="reload_with_data(current_selected_partner, false, current_shipping_type)">
                         <ion-icon name="undo"></ion-icon>
-                      </button>
-                      <button tooltip="Modificar urgencia" positionV="top" class="row-button black" color="default" (click)="toggle_urgent_option('stock.quant.package', current_selected_pkg, !current_pkg_data['urgent'])" outline icon-only>
-                        <ion-icon name='ios-speedometer' is-active="true" [ngClass]="{'active-icon': current_pkg_data['urgent' == true]}"></ion-icon>
                       </button>
                       <button tooltip="Opciones de envío" positionV="top" class="row-button black" *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg" icon-only (click)="show_shipping_options(current_selected_pkg)">
                         <ion-icon name="cog"></ion-icon>
@@ -258,10 +255,6 @@
     </button>
     <button *ngIf="!current_selected_pkg" tooltip="Opciones de envío" positionV="top" class="row-button" color="default" (click)="show_shipping_options_line(move['id'])" outline icon-only>
       <ion-icon name='cog' is-active="true"></ion-icon>
-    </button>
-    <button *ngIf="!current_selected_pkg" tooltip="Modificar urgencia" positionV="top" class="row-button" color="default" (click)="toggle_urgent_option('stock.move.line', move['id'], !move['urgent'])" outline icon-only>
-      <ion-icon name='ios-speedometer' is-active="true" [ngClass]="{'active-icon': move['urgent' == true]}"></ion-icon>
-    </button>
-    
+    </button>    
   </ion-row>
 </ng-template>
