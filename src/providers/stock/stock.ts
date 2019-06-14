@@ -15,7 +15,7 @@ export class StockProvider {
   STOCK_FIELDS = {
 
     'stock.move.line':{
-      'tree': ['id', 'origin', 'name', 'result_package_id', 'move_id', 'product_qty', 'state', 'package_id', 'shipping_type', , 'result_package_shipping_type'],
+      'tree': ['id', 'origin', 'name', 'result_package_id', 'move_id', 'product_qty', 'state', 'package_id', 'shipping_type'],
     },
 
     'stock.quant.package': {
@@ -83,74 +83,6 @@ export class StockProvider {
     return promise
   }
 
-  create_new_package(model, partner_id, shipping_type){
-    let self = this
-    let pckg_model = model
-    let pckg_values = {
-      'dest_partner_id': partner_id,
-      'shipping_type': shipping_type
-    }
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.new_package(pckg_model, pckg_values).then((lineas:Array<{}>) => {
-        resolve(lineas)
-      })
-      .catch((err) => {
-        reject(false)
-        console.log("Error")
-      })
-    })
-
-    return promise
-    
-  }
-
-  create_new_package_from_move(move_id, partner_id) {
-    let self = this
-    let model 
-    let values = {
-      'move_line_id': move_id,
-      'dest_partner_id': partner_id,
-    }
-     
-    model = 'stock.quant.package'
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.execute(model, 'create_new_package_from_move', values).then((done) => {
-       resolve(done)
-      })
-      .catch((err) => {
-        reject(false)
-        console.log("Error al validar")
-    });
-    })
-    
-    return promise
-  }
-
-  add_package_id_to_line(move_id, result_package_id, shipping_type=false){
-          
-    let self = this
-    let model = 'stock.move.line'
-    let valores = {
-      'result_package_id': result_package_id
-    }
-    
-    if(shipping_type != false) {
-      valores['shipping_type'] = shipping_type
-    }     
-    
-    let promise = new Promise( (resolve, reject) => {
-        self.odooCon.update_lines(model, 'write', valores, move_id).then((sp_ids:any) => {
-          for (let sm_id in sp_ids){sp_ids[sm_id]['model'] = model}
-          resolve(sp_ids)
-        })
-        .catch((err) => {
-          reject(false)
-          console.log("Error al validar")
-      });
-      });
-    return promise
-  }
-
   get_package_info(id) {
     let self = this
     let domain = [['id', '=', id]]
@@ -211,24 +143,6 @@ export class StockProvider {
     return promise
   }
 
-  set_package_info(package_id, valores){
-      
-    let self = this
-    let model = 'stock.quant.package'
-    
-    let promise = new Promise( (resolve, reject) => {
-        self.odooCon.update_lines(model, 'write', valores, package_id).then((sp_ids:any) => {
-          for (let sm_id in sp_ids){sp_ids[sm_id]['model'] = model}
-          resolve(sp_ids)
-        })
-        .catch((err) => {
-          reject(false)
-          console.log("Error al validar")
-      });
-      });
-    return promise
-  }
-
   set_package_shipping_type(values) {
     let self = this
     let model 
@@ -246,8 +160,6 @@ export class StockProvider {
     
     return promise
   }
-
-  
 
   // Home warehouse selection
 
@@ -271,24 +183,6 @@ export class StockProvider {
   }
 
    // Move lines
-
-   get_stock_move_list(domain, type='tree') {
-    let self = this
-    let model = 'stock.move'
-    let fields = this.STOCK_FIELDS[model][type]
-    let promise = new Promise( (resolve, reject) => {
-      self.odooCon.search_read(model, domain, fields, 0, 0).then((sp_ids:any) => {
-       for (let sm_id in sp_ids){sp_ids[sm_id]['model'] = model}
-       resolve(sp_ids)
-      })
-      .catch((err) => {
-        console.log(err)
-        reject(false)
-        console.log("Error buscando " + model)
-    });
-    })
-    return promise
-  }
 
   get_stock_move_lines_list_apk(partner_id, location_dest_id) {
     let self = this
@@ -327,24 +221,6 @@ export class StockProvider {
         reject(err)
     });
     })
-    return promise
-  }
-
-  set_move_line_info(move_id, valores){
-          
-    let self = this
-    let model = 'stock.move.line'
-    
-    let promise = new Promise( (resolve, reject) => {
-        self.odooCon.update_lines(model, 'write', valores, move_id).then((sp_ids:any) => {
-          for (let sm_id in sp_ids){sp_ids[sm_id]['model'] = model}
-          resolve(sp_ids)
-        })
-        .catch((err) => {
-          reject(false)
-          console.log("Error al validar")
-      });
-      });
     return promise
   }
 

@@ -118,7 +118,7 @@
                       <ion-col col-2 class="col product-col shipping-color">{{move['origin']}}</ion-col>
                       <ion-col col-3 class="col product-col shipping-color">{{move['package_id'] && move['package_id']['name'] || 'N'}}</ion-col>
                       <ion-col *ngIf="move['result_package_id'] && move['result_package_id']['name']; else not_result_package_id_open" 
-                      col-3 class="col product-col shipping-color" (click)="open_package(move['result_package_id']['id'])">{{move['result_package_id']['name']}}</ion-col>
+                      col-3 class="col product-col shipping-color" [ngClass]="{'active-icon': move['result_package_id']['id'] == current_selected_pkg}" (click)="open_package(move['result_package_id']['id'])">{{move['result_package_id']['name']}}</ion-col>
                       <ion-col col-3 class="col product-col options shipping-color">
                         <ng-container [ngTemplateOutlet]="move['result_package_id'] ?result_package_id_buttons : not_result_package_id_buttons" [ngTemplateOutletContext]="{move:move}"></ng-container>
                       </ion-col>
@@ -159,11 +159,6 @@
                   </ion-col>
                   <ion-col col-4 class="col add">
                     <ion-row>
-                      <!-- <ion-col class="col add" col-12>
-                        <button tooltip="Nuevo Paquete" positionV="top" arrow *ngIf="current_selected_partner && selected_partner_name" class="black" icon-only (click)="update_packages(false, false, 'new_partner_pack', current_selected_partner)">
-                          <ion-icon name="add-circle"></ion-icon>
-                        </button>
-                      </ion-col> -->
                     </ion-row>
                   </ion-col>
                 </ion-row>
@@ -197,17 +192,6 @@
                     <span *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg">Envío: {{current_pkg_data['info_route_str']}}</span>
                   </ion-col>
                 </ion-row>
-                <!-- <ion-row class="row header">
-                  <ion-col col-6 class="col">Nombre</ion-col>
-                  <ion-col col-6 class="col">Cant.</ion-col>
-                </ion-row> -->
-                <!-- <ion-row>
-                  <ion-col col-12 class="col">
-                    <ion-row class="row" (click)="reload_with_data(current_selected_partner, false, current_shipping_type)">
-                      <ion-icon name="undo"></ion-icon>
-                    </ion-row>
-                  </ion-col>
-                </ion-row> -->
                 <div dragula="move_lines_container" id="pkgs_info" [dragulaModel]="current_pkg_info">
                   <ion-row class="row" id="{{pkg_line['id']}}" *ngFor="let pkg_line of current_pkg_info">
                     <ion-col col-10 col-xs-6 col-sm-6 col-md-6 col-lg-10 col-xl-10 class="col product-col">
@@ -239,9 +223,6 @@
 
 <ng-template #result_package_id_buttons let-move='move'>
   <ion-row>
-    <button tooltip="Ver" positionV="top" class="row-button" arrow (click)="open_package(move['result_package_id']['id'])" [ngClass]="{'active-icon': move['result_package_id']['id'] == current_selected_pkg}" color="default" outline icon-only>
-      <ion-icon name='eye' is-active="true"></ion-icon>
-    </button>
     <button tooltip="Desempaquetar" class="row-button" positionV="top" arrow (click)="update_packages(move['id'], false, 'unlink')" color="default" outline icon-only>
       <ion-icon name="remove-circle"></ion-icon>
     </button>
