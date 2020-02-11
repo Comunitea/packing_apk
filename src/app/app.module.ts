@@ -5,6 +5,7 @@ import { MyApp } from './app.component';
 import { IonicStorageModule } from '@ionic/storage';
 import { DragulaModule } from 'ng2-dragula'
 
+import { PackagingProductComponent } from '../components/packaging-product/packaging-product'
 import { HomePage } from '../pages/home/home';
 import { TabsPage } from '../pages/tabs/tabs';
 import { StockMoveListPage } from '../pages/stock-move-list/stock-move-list';
@@ -16,11 +17,14 @@ import { OdooProvider } from '../providers/odoo/odoo';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TooltipsModule } from 'ionic-tooltips';
 
+
+
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
     TabsPage,
+    PackagingProductComponent,
     StockMoveListPage
   ],
   imports: [
@@ -46,7 +50,8 @@ import { TooltipsModule } from 'ionic-tooltips';
     MyApp,
     HomePage,
     TabsPage,
-    StockMoveListPage
+    StockMoveListPage,
+    PackagingProductComponent
   ],
   providers: [
     StatusBar,

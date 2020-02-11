@@ -143,6 +143,25 @@ export class StockProvider {
     return promise
   }
 
+  set_packaging_lines(val){
+    let self = this
+    let model 
+   
+     
+    model = 'stock.quant.package'
+    let promise = new Promise( (resolve, reject) => {
+      self.odooCon.execute(model, 'set_packaging_lines', val).then((done) => {
+       resolve(done)
+      })
+      .catch((err) => {
+        reject(false)
+        console.log("Error al actualizar set_packaging_lines")
+    });
+    })
+    
+    return promise
+  }
+
   set_package_shipping_type(values) {
     let self = this
     let model 
@@ -224,6 +243,8 @@ export class StockProvider {
     return promise
   }
 
+
+  
   set_move_line_shipping_type(values) {
     let self = this
     let model 

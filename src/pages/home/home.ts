@@ -89,8 +89,9 @@ export class HomePage {
     }
 
     conectarApp(verificar) {
-        this.cargar = true;
+        
         if (verificar){
+            this.cargar = true;
             this.storage.set('CONEXION', this.CONEXION).then(() => {
                 this.check_conexion(this.CONEXION)
             })

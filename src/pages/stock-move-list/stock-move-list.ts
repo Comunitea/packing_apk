@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, NgModule } from '@angular/core';
 import { IonicPage, NavController, NavParams, ViewController, ActionSheetController, AlertController } from 'ionic-angular';
 import { StockProvider } from '../../providers/stock/stock'
 import { Storage } from '@ionic/storage';
@@ -55,6 +55,7 @@ export class StockMoveListPage {
   current_pkg_data: any
   multipleSelectionMain: boolean
   subs = new Subscription();
+  packaging_line_ids
 
   constructor(public alertCtrl: AlertController, public actionSheetCtrl: ActionSheetController, public dragulaService: DragulaService,
      public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController, private storage: Storage,
@@ -87,6 +88,7 @@ export class StockMoveListPage {
         this.filtered_arrival_pkg_list = []
         this.selected_line_selected_shipping = []
         this.current_pkg_data = []
+        this.packaging_line_ids = []
         this.move_status[0] = {
           'id': 0,
           'code': 'assigned',
@@ -341,6 +343,9 @@ export class StockMoveListPage {
     this.stockInfo.get_package_lines(package_id).then((lineas:Array<{}>)=> {
       this.current_pkg_info = lineas['move_lines_info']
       this.current_pkg_data = lineas['package_info']
+      this.packaging_line_ids = lineas['packaging_line_info']
+      console.log(lineas['packaging_line_info'])
+      console.log(this.packaging_line_ids)
     }).catch((mierror) => {
       //this.stockInfo.presentAlert('Error de conexión', 'Error al recuperar los registros'+mierror);
       this.reload_with_data(this.current_selected_partner, false, this.current_shipping_type)

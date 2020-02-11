@@ -187,6 +187,12 @@
                     </ion-row>
                   </ion-col>
                 </ion-row>
+               
+                
+                <packaging-product id="{{packaging_line['id']}}" *ngFor="let packaging_line of packaging_line_ids" [packaging_line] = "packaging_line"></packaging-product>
+                
+              
+               
                 <ion-row class="row header">
                   <ion-col col-12 class="col add">
                     <span *ngIf="current_selected_partner && selected_partner_name && current_selected_pkg">Envío: {{current_pkg_data['info_route_str']}}</span>
